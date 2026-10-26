@@ -11,11 +11,12 @@
 ## MỤC LỤC
 1. [Chiến Lược Bảo Vệ Viva Đạt Điểm Tuyệt Đối](#phần-1-chiến-lược-bảo-vệ-viva-đạt-điểm-tuyệt-đối)
 2. [6 "Luật Bất Thành Văn" Của Đồ Án (Các Bẫy Thường Gặp)](#phần-2-6-luật-bất-thành-văn-của-đồ-án)
-3. [Bộ Câu Hỏi & Trả Lời Vấn Đáp Chi Tiết Theo Từng File](#phần-3-bộ-câu-hỏi--trả-lời-theo-từng-file)
-   - [Nhóm Frontend, UI/UX, Navigation & Notification (TV1)](#31-nhóm-frontend-uiux-navigation--notification-tv1)
-   - [Nhóm Data Layer, Core Logic, Offline & State (TV2 & Giao thoa)](#32-nhóm-data-layer-core-logic-offline--state-tv2--giao-thoa)
-4. [Kịch Bản 10 Câu Hỏi "Bẫy Góc / Bẻ Lập Trình" Của Thầy Vinh](#phần-4-kịch-bản-10-câu-hỏi-bẫy-góc-khó-nhằn)
-5. [Bảng Tra Cứu Nhanh: Thầy Hỏi Gì -> Mở Ngay Dòng Nào](#phần-5-bảng-tra-cứu-nhanh-thầy-hỏi-gì---mở-ngay-dòng-nào)
+3. [Bản Đồ Tuần Tự 9 Bước Xây Dựng Dự Án Từ Con Số 0 (Người Chưa Biết Gì Cũng Hiểu)](#phần-3-bản-đồ-tuần-tự-9-bước-xây-dựng-dự-án-từ-con-số-0-người-chưa-biết-gì-cũng-hiểu) 🌟
+4. [Bộ Câu Hỏi & Trả Lời Vấn Đáp Chi Tiết Theo Từng File](#phần-4-bộ-câu-hỏi--trả-lời-theo-từng-file)
+   - [Nhóm Frontend, UI/UX, Navigation & Notification (TV1)](#41-nhóm-frontend-uiux-navigation--notification-tv1)
+   - [Nhóm Data Layer, Core Logic, Offline & State (TV2 & Giao thoa)](#42-nhóm-data-layer-core-logic-offline--state-tv2--giao-thoa)
+5. [Kịch Bản 10 Câu Hỏi "Bẫy Góc / Bẻ Lập Trình" Của Thầy Vinh](#phần-5-kịch-bản-10-câu-hỏi-bẫy-góc-khó-nhằn)
+6. [Bảng Tra Cứu Nhanh: Thầy Hỏi Gì -> Mở Ngay Dòng Nào](#phần-6-bảng-tra-cứu-nhanh-thầy-hỏi-gì---mở-ngay-dòng-nào)
 
 ---
 
@@ -67,9 +68,190 @@
 
 ---
 
-## PHẦN 3: BỘ CÂU HỎI & TRẢ LỜI THEO TỪNG FILE
+## PHẦN 3: BẢN ĐỒ TUẦN TỰ 9 BƯỚC XÂY DỰNG DỰ ÁN TỪ CON SỐ 0 (NGƯỜI CHƯA BIẾT GÌ CŨNG HIỂU)
 
-### 3.1. NHÓM FRONTEND, UI/UX, NAVIGATION & NOTIFICATION (TV1)
+### 🏗️ ẨN DỤ XÂY NHÀ: "XÂY TỪ MÓNG LÊN MÁI, KHÔNG XÂY NGƯỢC TỪ TRẦN XUỐNG ĐẤT"
+Nếu Thầy Vinh hỏi: *"Tại sao nhóm em không mở màn hình Trang chủ (`index.tsx`) ra code ngay từ đầu mà phải tạo hàng loạt file khác trước?"*
+
+🗣️ **Cách trả lời đạt điểm 10/10**:
+> *"Dạ thưa Thầy, giống như việc xây một ngôi nhà: không ai xây phòng khách trước khi đổ móng và mua gạch, cát, xi măng. Trong kỹ thuật phần mềm di động chuyên nghiệp, nếu nhảy vào code màn hình ngay thì sẽ gặp lỗi: 'không có mã màu chuẩn', 'không biết bài tập gồm những thuộc tính gì', 'không có nút bấm tái sử dụng'. Do đó, nhóm em tuân thủ chặt chẽ **Kiến trúc phân tầng 9 bước (Layered Architecture)**: Đi từ Móng thiết kế $\rightarrow$ Cảm biến Theme $\rightarrow$ Mô hình dữ liệu $\rightarrow$ Hàm tính toán $\rightarrow$ Linh kiện giao diện cơ bản $\rightarrow$ Khối nghiệp vụ $\rightarrow$ Tầng dữ liệu & Thông báo $\rightarrow$ Lắp ghép màn hình $\rightarrow$ Kiểm thử tự động."*
+
+---
+
+### 🗺️ BẢNG TỔNG QUÁT 9 BƯỚC THỰC HIỆN DỰ ÁN
+
+| Bước | Tên file cần tạo | Phân tầng kiến trúc | Nhiệm vụ chính trong dự án |
+| :---: | :--- | :--- | :--- |
+| **1** | [tokens.ts](file:///d:/LapTrinhMobile/Study_Planner/src/constants/tokens.ts) | Design Tokens | Quy định bộ màu Sáng/Tối, khoảng cách 8pt, kích thước ngón tay 44x44pt |
+| **2** | [useThemeColor.ts](file:///d:/LapTrinhMobile/Study_Planner/src/hooks/useThemeColor.ts) | Theme Hook | Cảm biến nhận diện chế độ Sáng/Tối của điện thoại để cấp phát màu tự động |
+| **3** | [study.ts](file:///d:/LapTrinhMobile/Study_Planner/src/types/study.ts) | Domain Models (Types) | Bản vẽ khuôn mẫu: Môn học gồm gì, Bài tập gồm gì, Thống kê gồm gì |
+| **4** | [dateUtils.ts](file:///d:/LapTrinhMobile/Study_Planner/src/utils/dateUtils.ts)<br>[statsUtils.ts](file:///d:/LapTrinhMobile/Study_Planner/src/utils/statsUtils.ts) | Core Logic & Utilities | Xử lý múi giờ bằng `startOfDay`, đếm và tính % tiến độ môn học |
+| **5** | [ThemedText.tsx](file:///d:/LapTrinhMobile/Study_Planner/src/components/ui/ThemedText.tsx)<br>[ThemedView.tsx](file:///d:/LapTrinhMobile/Study_Planner/src/components/ui/ThemedView.tsx)<br>[AccessibleButton.tsx](file:///d:/LapTrinhMobile/Study_Planner/src/components/ui/AccessibleButton.tsx)<br>[StateHandler.tsx](file:///d:/LapTrinhMobile/Study_Planner/src/components/ui/StateHandler.tsx) | Atomic UI Components | Các viên gạch giao diện cơ bản dùng chung (Text/View tự đổi màu, Nút trợ năng, Bộ 4 trạng thái) |
+| **6** | [AssignmentCard.tsx](file:///d:/LapTrinhMobile/Study_Planner/src/components/features/AssignmentCard.tsx)<br>[Due48hWidget.tsx](file:///d:/LapTrinhMobile/Study_Planner/src/components/features/Due48hWidget.tsx)<br>[WeeklyCalendar.tsx](file:///d:/LapTrinhMobile/Study_Planner/src/components/features/WeeklyCalendar.tsx) | Feature Components (TV1) | Thẻ bài tập vạch màu, Widget cảnh báo hạn 48h, Lịch tuần Thứ 2 - Chủ Nhật có chấm trạng thái |
+| **7** | [useNotifications.ts](file:///d:/LapTrinhMobile/Study_Planner/src/hooks/useNotifications.ts)<br>[useCourses.ts](file:///d:/LapTrinhMobile/Study_Planner/src/hooks/useCourses.ts)<br>[useAssignments.ts](file:///d:/LapTrinhMobile/Study_Planner/src/hooks/useAssignments.ts) | Data & Notification Layer | Xin quyền & hẹn giờ nhắc bài, Deep Linking, Cập nhật lạc quan (Optimistic Update) & Offline Storage |
+| **8** | [app/_layout.tsx](file:///d:/LapTrinhMobile/Study_Planner/app/_layout.tsx)<br>[app/(app)/(tabs)/index.tsx](file:///d:/LapTrinhMobile/Study_Planner/app/%28app%29/%28tabs%29/index.tsx)<br>[schedule.tsx](file:///d:/LapTrinhMobile/Study_Planner/app/%28app%29/%28tabs%29/schedule.tsx)<br>[courses.tsx](file:///d:/LapTrinhMobile/Study_Planner/app/%28app%29/%28tabs%29/courses.tsx)<br>[assignments/[id].tsx](file:///d:/LapTrinhMobile/Study_Planner/app/%28app%29/assignments/%5Bid%5D.tsx)<br>[modal/new-assignment.tsx](file:///d:/LapTrinhMobile/Study_Planner/app/%28app%29/modal/new-assignment.tsx) | Navigation & Screens (Expo Router) | Ghép các linh kiện thành 3 màn hình Tab (Trang chủ, Lịch học, Tiến độ môn), Màn hình Chi tiết và Modal Thêm bài |
+| **9** | [AssignmentCard.test.tsx](file:///d:/LapTrinhMobile/Study_Planner/__tests__/AssignmentCard.test.tsx) | Automated Testing | Viết Jest Component Test xác nhận nút 44x44pt và ô checkbox hoạt động hoàn hảo |
+
+---
+
+### 🔍 CHI TIẾT TỪNG BƯỚC: FILE NÀO, CÓ GÌ BÊN TRONG & TẠI SAO PHẢI LÀM TRƯỚC?
+
+#### 🧱 BƯỚC 1: XÂY MÓNG THIẾT KẾ — TẠO FILE `src/constants/tokens.ts`
+- **Tên file**: [src/constants/tokens.ts](file:///d:/LapTrinhMobile/Study_Planner/src/constants/tokens.ts)
+- **Trong file này có những gì?**:
+  1. `Colors.light`: Bảng màu giao diện sáng (nền trắng `#FFFFFF`, chữ đen `#0F172A`, màu xanh chủ đạo `#2563EB`, màu bề mặt thẻ `#F8FAFC`).
+  2. `Colors.dark`: Bảng màu giao diện tối (nền xám đen `#0B1120`, chữ trắng `#F8FAFC`, bề mặt thẻ `#1E293B`).
+  3. `Spacing`: Bảng khoảng cách chuẩn 8-point grid gồm các bội số: `xs: 4`, `sm: 8`, `md: 16`, `lg: 24`, `xl: 32`.
+  4. `TouchTarget`: Quy định vùng chạm ngón tay tối thiểu theo chuẩn quốc tế: `minHeight: 44, minWidth: 44`.
+- **Tại sao phải tạo file này đầu tiên?**:
+  Vì đề bài của Thầy Vinh có quy định bắt buộc: **Luật Zero-Hex (Không mã màu Hex trong UI)**. Nếu không có file này trước, sinh viên khi code màn hình sẽ tiện tay gõ mã màu bừa bãi `#fff`, `#333`, dẫn đến app bị trừ điểm nặng và không thể bật chế độ Dark Mode đồng bộ.
+- 🗣️ **Khi Thầy hỏi**: *"Bước 1 em làm gì?"*  
+  👉 *"Dạ bước 1 em tạo file `tokens.ts` để định nghĩa toàn bộ Design Tokens: bảng màu sáng/tối, lưới khoảng cách 8pt và chuẩn kích thước ngón tay 44x44pt."*
+
+---
+
+#### 🌓 BƯỚC 2: TẠO "MẮT THẦN" CẢM BIẾN SÁNG / TỐI — TẠO FILE `src/hooks/useThemeColor.ts`
+- **Tên file**: [src/hooks/useThemeColor.ts](file:///d:/LapTrinhMobile/Study_Planner/src/hooks/useThemeColor.ts)
+- **Trong file này có những gì?**:
+  - Gọi hook `useColorScheme()` có sẵn của React Native để lắng nghe trạng thái của điện thoại.
+  - Kiểm tra điều kiện: Nếu người dùng đang bật chế độ tối (`scheme === 'dark'`) $\rightarrow$ trả về bộ màu `Colors.dark`; nếu là chế độ sáng $\rightarrow$ trả về bộ màu `Colors.light`.
+- **Tại sao phải làm file này ở bước 2?**:
+  File `tokens.ts` ở Bước 1 mới chỉ là một danh sách màu nằm im. Muốn các nút bấm hay chữ trên màn hình biết khi nào nên lấy màu sáng, khi nào lấy màu tối thì bắt buộc phải có hook này làm nhiệm vụ "phát màu" tự động.
+- 🗣️ **Khi Thầy hỏi**: *"Bước 2 em làm gì?"*  
+  👉 *"Dạ bước 2 em tạo custom hook `useThemeColor.ts` để giúp toàn bộ giao diện tự động thích ứng ngay lập tức khi người dùng bật tắt Dark Mode trên điện thoại."*
+
+---
+
+#### 📋 BƯỚC 3: TẠO "KHUÔN MẪU BẢN VẼ" DỮ LIỆU — TẠO FILE `src/types/study.ts`
+- **Tên file**: [src/types/study.ts](file:///d:/LapTrinhMobile/Study_Planner/src/types/study.ts)
+- **Trong file này có những gì?**:
+  1. `Course`: Định nghĩa môn học gồm 4 thông tin: mã định danh `id`, mã môn `code` (ví dụ: TH7011101), tên môn `name` (Lập trình Mobile), và màu nhận diện `colour` (`#2563EB`).
+  2. `AssignmentItem`: Định nghĩa bài tập gồm: `id`, `courseId` (thuộc môn nào), `title` (tên bài), `dueAt` (hạn nộp dạng chuỗi ISO), `status` (trạng thái `'pending'` hoặc `'completed'`), `notes` (ghi chú thêm), `photoUri` (đường dẫn ảnh chụp bảng/đề bài).
+  3. `CourseProgress`: Định nghĩa kết quả tính tiến độ môn học: tổng bài `total`, bài đã làm `completed`, số bài còn nợ `outstanding`, phần trăm `percentage`.
+- **Tại sao phải làm file này ở bước 3?**:
+  TypeScript bắt buộc phải biết "hình thù" của dữ liệu. Nếu không có file này, khi viết các hàm tính toán hay vẽ thẻ bài tập, máy tính sẽ báo lỗi đỏ vì không biết `assignment.title` hay `assignment.dueAt` là cái gì.
+- 🗣️ **Khi Thầy hỏi**: *"Bước 3 em làm gì?"*  
+  👉 *"Dạ bước 3 em định nghĩa các TypeScript Interfaces trong `src/types/study.ts` để đảm bảo an toàn kiểu dữ liệu (Type Safety) cho toàn bộ dự án."*
+
+---
+
+#### 🧮 BƯỚC 4: TẠO CÁC CÔNG CỤ TÍNH TOÁN LOGIC LÕI — TẠO `src/utils/`
+- **File 1**: [src/utils/dateUtils.ts](file:///d:/LapTrinhMobile/Study_Planner/src/utils/dateUtils.ts) (Xử lý Ngày & Múi giờ):
+  - `startOfDay(date)`: Đưa giờ-phút-giây về đúng `00:00:00` của ngày địa phương.
+  - `isDueTomorrow(iso)`: Kiểm tra bài tập có phải hạn nộp ngày mai không (so sánh 2 ngày đã được reset bằng `startOfDay`).
+  - `isDueWithin48Hours(iso)`: Tính khoảng cách giờ từ hiện tại tới deadline xem có nằm trong 0 đến 48 giờ hay không.
+  - `formatDateDisplay(iso)`: Đổi ngày giờ quốc tế ISO thành định dạng người Việt hay đọc `dd/mm/yyyy`.
+- **File 2**: [src/utils/statsUtils.ts](file:///d:/LapTrinhMobile/Study_Planner/src/utils/statsUtils.ts) (Tính toán tiến độ):
+  - `computeCourseProgress(courseId, assignments)`: Đếm tổng số bài của môn học, đếm số bài đã hoàn thành, và tính công thức `% = (completed / total) * 100`.
+- **Tại sao phải làm file này ở bước 4?**:
+  Để tuân thủ 2 luật bất thành văn: **Luật Múi giờ (Date & Timezone Law)** và **Luật Dữ liệu dẫn xuất (Computed Data Law)**. Tách logic toán học ra khỏi màn hình giúp code sạch sẽ, không bị lặp lại và dễ viết Unit Test kiểm thử.
+- 🗣️ **Khi Thầy hỏi**: *"Bước 4 em làm gì?"*  
+  👉 *"Dạ bước 4 em viết các hàm tiện ích trong `dateUtils.ts` và `statsUtils.ts` để giải quyết bài toán lệch múi giờ và tính toán phần trăm tiến độ động bằng thuật toán thuần túy."*
+
+---
+
+#### 🧱 BƯỚC 5: TẠO CÁC VIÊN GẠCH GIAO DIỆN CƠ BẢN — TẠO `src/components/ui/`
+- **File 1**: [src/components/ui/ThemedText.tsx](file:///d:/LapTrinhMobile/Study_Planner/src/components/ui/ThemedText.tsx) & [ThemedView.tsx](file:///d:/LapTrinhMobile/Study_Planner/src/components/ui/ThemedView.tsx)
+  - Thay thế cho thẻ chữ `<Text>` và thẻ hộp `<View>` mặc định, tự động lấy màu chữ và màu nền theo theme từ Bước 2.
+- **File 2**: [src/components/ui/AccessibleButton.tsx](file:///d:/LapTrinhMobile/Study_Planner/src/components/ui/AccessibleButton.tsx)
+  - Nút bấm chuẩn trợ năng: Chiều cao tối thiểu 44pt (`TouchTarget.minHeight`), có thuộc tính `accessibilityRole="button"`, hỗ trợ 3 kiểu nút (`primary` màu xanh đậm, `secondary` nút viền, `danger` nút đỏ).
+- **File 3**: [src/components/ui/StateHandler.tsx](file:///d:/LapTrinhMobile/Study_Planner/src/components/ui/StateHandler.tsx)
+  - Bộ kiểm soát 4 trạng thái bắt buộc của Thầy Vinh:
+    1. Đang tải (`isLoading` $\rightarrow$ hiện xoay vòng tròn `ActivityIndicator`).
+    2. Lỗi mạng (`isError` $\rightarrow$ hiện icon ⚠️ cảnh báo và nút "Thử lại tải dữ liệu").
+    3. Hết bài / Chưa có bài (`isEmpty` $\rightarrow$ hiện icon 📭 thông báo danh sách trống).
+    4. Thành công $\rightarrow$ hiển thị nội dung thật của màn hình.
+- **Tại sao phải làm bước 5?**:
+  Chuẩn bị sẵn các linh kiện dùng chung để các màn hình lớn ở bước sau chỉ việc ráp vào, không bao giờ lo bị trượt ngón tay hay màn hình trắng tinh khi mất mạng.
+- 🗣️ **Khi Thầy hỏi**: *"Bước 5 em làm gì?"*  
+  👉 *"Dạ bước 5 em tạo tầng Atomic UI Components, đặc biệt là `AccessibleButton` đạt chuẩn trợ năng 44x44pt và `StateHandler` xử lý đủ 4 trạng thái mạng."*
+
+---
+
+#### 📱 BƯỚC 6: XÂY DỰNG CÁC KHỐI NGHIỆP VỤ CHUYÊN DỤNG — TẠO `src/components/features/` (TRỌNG TÂM TV1)
+- **File 1**: [src/components/features/AssignmentCard.tsx](file:///d:/LapTrinhMobile/Study_Planner/src/components/features/AssignmentCard.tsx) (Thẻ bài tập)
+  - Vẽ vạch màu nhận diện môn học ở cạnh trái (rộng 4pt).
+  - Tiêu đề bài tập tự động gạch ngang (`line-through`) và mờ đi (`opacity: 0.6`) khi hoàn thành.
+  - Ô Checkbox riêng biệt chuẩn trợ năng $\ge 44 \times 44$ pt để tick đổi trạng thái.
+  - Bấm vào thân thẻ sẽ kích hoạt `onPressCard` để nhảy sang xem chi tiết.
+- **File 2**: [src/components/features/Due48hWidget.tsx](file:///d:/LapTrinhMobile/Study_Planner/src/components/features/Due48hWidget.tsx) (Widget 48h trên Trang chủ)
+  - Tự động gọi hàm `isDueWithin48Hours()` để lọc ra các bài tập chưa nộp có hạn trong 48 tiếng tới.
+  - Hiển thị biểu tượng đồng hồ cát ⏳ kèm giờ đến hạn nộp (ví dụ: `17:00 (27-10)`).
+- **File 3**: [src/components/features/WeeklyCalendar.tsx](file:///d:/LapTrinhMobile/Study_Planner/src/components/features/WeeklyCalendar.tsx) (Lịch xem theo tuần)
+  - Thuật toán `getWeekDays()` tự động lùi ngày về Thứ Hai đầu tuần và tạo mảng 7 ngày liên tiếp từ Thứ Hai đến Chủ Nhật.
+  - Mỗi ngày có chấm tròn trạng thái: Chấm đỏ (có bài chưa nộp), chấm xanh lá (đã hoàn thành hết bài).
+  - Có 3 nút bấm chuyển tuần: Tuần trước, Hôm nay, Tuần sau.
+- **Tại sao làm bước 6?**:
+  Đây là 3 linh kiện nghiệp vụ cốt lõi theo đề bài phân công của TV1 (Thẻ bài tập, Widget 48h điểm > 8.0, và Lịch xem tuần).
+- 🗣️ **Khi Thầy hỏi**: *"Bước 6 em làm gì?"*  
+  👉 *"Dạ bước 6 em hiện thực hóa 3 linh kiện nghiệp vụ chuyên biệt của TV1: Thẻ bài tập có vạch màu môn học, Widget cảnh báo deadline 48h và Thanh lịch tuần với thuật toán sinh 7 ngày chuẩn xác."*
+
+---
+
+#### 🔔 BƯỚC 7: XÂY DỰNG TẦNG DỮ LIỆU & THÔNG BÁO — TẠO `src/hooks/`
+- **File 1**: [src/hooks/useNotifications.ts](file:///d:/LapTrinhMobile/Study_Planner/src/hooks/useNotifications.ts) (Thông báo cục bộ & Deep Linking)
+  - `requestNotificationPermissions()`: Xin quyền gửi thông báo từ người dùng.
+  - `scheduleAssignmentNotification(id, title, date)`: Đặt lịch hẹn giờ gửi thông báo trước deadline 1 tiếng.
+  - `useNotificationListener()`: Lắng nghe khi sinh viên chạm tay vào thông báo trên điện thoại $\rightarrow$ lập tức điều hướng app nhảy thẳng vào màn hình `/assignments/[id]` tương ứng.
+- **File 2**: [src/hooks/useCourses.ts](file:///d:/LapTrinhMobile/Study_Planner/src/hooks/useCourses.ts)
+  - Dùng TanStack Query tải danh sách môn học từ Remote API; nếu rớt mạng thì đọc từ bộ nhớ đệm `AsyncStorage` hoặc nạp bộ môn học dự phòng `DEFAULT_COURSES`.
+- **File 3**: [src/hooks/useAssignments.ts](file:///d:/LapTrinhMobile/Study_Planner/src/hooks/useAssignments.ts)
+  - `useAssignments()`: Tải danh sách bài tập kèm bộ dữ liệu mẫu khởi tạo `getDefaultAssignments()` và bộ nhớ đệm ngoại tuyến (Offline Storage).
+  - `useToggleAssignment()`: Tích hợp kỹ thuật **Cập nhật lạc quan (Optimistic Update)**:
+    * `onMutate`: Lưu snapshot cũ `previous`, đổi trạng thái trên màn hình cho người dùng thấy ngay lập tức.
+    * `onError`: Nếu mất mạng hoặc API lỗi thì tự động khôi phục lại snapshot cũ (rollback).
+    * `onSettled`: Luôn làm tươi lại dữ liệu đồng bộ với server.
+  - `useCreateAssignment()`: Thêm bài tập mới và lưu vào offline cache.
+- **Tại sao làm bước 7?**:
+  Để chuẩn bị sẵn sàng toàn bộ dữ liệu thật, cơ chế đồng bộ mạng và hệ thống chuông báo trước khi lắp ghép vào các màn hình.
+- 🗣️ **Khi Thầy hỏi**: *"Bước 7 em làm gì?"*  
+  👉 *"Dạ bước 7 em xây dựng tầng dữ liệu bằng TanStack Query và hệ thống thông báo Expo Notifications, trang bị đầy đủ cơ chế Cập nhật lạc quan, tự động rollback và Deep Linking."*
+
+---
+
+#### 🗺️ BƯỚC 8: LẮP GHÉP CÁC MÀN HÌNH HOÀN CHỈNH BẰNG EXPO ROUTER — TẠO THƯ MỤC `app/`
+- **File 1**: [app/_layout.tsx](file:///d:/LapTrinhMobile/Study_Planner/app/_layout.tsx) (Gốc toàn ứng dụng): Bọc `QueryClientProvider` cho toàn app và kích hoạt hook `useNotificationListener()` để luôn sẵn sàng đón nhận Deep Link.
+- **File 2**: [app/(app)/_layout.tsx](file:///d:/LapTrinhMobile/Study_Planner/app/%28app%29/_layout.tsx): Quản lý luồng chuyển trang (Stack Navigation) và định nghĩa route mở Modal thêm bài tập mới.
+- **File 3**: [app/(app)/(tabs)/_layout.tsx](file:///d:/LapTrinhMobile/Study_Planner/app/%28app%29/%28tabs%29/_layout.tsx): Cấu hình thanh 3 tab ở đáy màn hình:
+  + Tab 1: Trang chủ 🏠 (`index.tsx`)
+  + Tab 2: Lịch học 📅 (`schedule.tsx`)
+  + Tab 3: Tiến độ môn 📊 (`courses.tsx`)
+- **File 4**: [app/(app)/(tabs)/index.tsx](file:///d:/LapTrinhMobile/Study_Planner/app/%28app%29/%28tabs%29/index.tsx) (Màn hình Trang chủ):
+  Ghép: Lời chào thời gian thực + Widget 48h + 3 thẻ thống kê (Tổng bài, Chưa nộp, Đã xong) + Nút thao tác nhanh + Danh sách bài cần làm gấp.
+- **File 5**: [app/(app)/(tabs)/schedule.tsx](file:///d:/LapTrinhMobile/Study_Planner/app/%28app%29/%28tabs%29/schedule.tsx) (Màn hình Lịch học):
+  Ghép: Nút chuyển chế độ Danh sách / Xem tuần + Bộ lọc trạng thái (Tất cả, Chưa nộp, Đã xong) + Bộ lọc ngang theo từng môn học.
+- **File 6**: [app/(app)/(tabs)/courses.tsx](file:///d:/LapTrinhMobile/Study_Planner/app/%28app%29/%28tabs%29/courses.tsx) (Màn hình Tiến độ môn):
+  Duyệt qua danh sách môn học, gọi `computeCourseProgress()` và vẽ thanh phần trăm tiến độ % sinh động cho từng môn.
+- **File 7**: [app/(app)/assignments/[id].tsx](file:///d:/LapTrinhMobile/Study_Planner/app/%28app%29/assignments/%5Bid%5D.tsx) (Chi tiết bài tập):
+  Màn hình đích đến của Deep Link: hiển thị tên môn, hạn nộp, ghi chú, ảnh chụp đề bài đính kèm và nút bấm to đánh dấu hoàn thành.
+- **File 8**: [app/(app)/modal/new-assignment.tsx](file:///d:/LapTrinhMobile/Study_Planner/app/%28app%29/modal/new-assignment.tsx) (Modal Tạo bài mới):
+  Form nhập tên bài, chọn môn, đính kèm ảnh bằng `expo-image-picker` và tự động hẹn giờ thông báo nhắc bài.
+- **File 9**: [app/+not-found.tsx](file:///d:/LapTrinhMobile/Study_Planner/app/+not-found.tsx) (Màn hình 404): Bắt các đường link sai và có nút quay về Trang chủ an toàn.
+- **Tại sao làm ở bước 8?**:
+  Vì tất cả linh kiện (Bước 5, 6) và dữ liệu (Bước 7) đã hoàn chỉnh 100%, việc ghép các màn hình trở nên cực kỳ tinh gọn, không bị lỗi thiếu file hay phụ thuộc vòng tròn.
+- 🗣️ **Khi Thầy hỏi**: *"Bước 8 em làm gì?"*  
+  👉 *"Dạ bước 8 em dùng Expo Router theo mô hình File-based Routing để lắp ráp toàn bộ các linh kiện thành các màn hình và thiết lập thanh điều hướng 3 tab."*
+
+---
+
+#### 🧪 BƯỚC 9: VIẾT MÃ KIỂM THỬ TỰ ĐỘNG — TẠO `__tests__/`
+- **Tên file**: [__tests__/AssignmentCard.test.tsx](file:///d:/LapTrinhMobile/Study_Planner/__tests__/AssignmentCard.test.tsx)
+- **Trong file này kiểm tra những gì?**:
+  Dùng thư viện Jest và `@testing-library/react-native` để chạy tự động 3 bài kiểm thử:
+  1. Kiểm tra `AccessibleButton` có đúng thuộc tính `accessibilityRole="button"` và chiều cao $\ge 44$ pt.
+  2. Kiểm tra `AssignmentCard` hiển thị đúng tên bài, tên môn và khi bấm vào ô checkbox thì hàm đổi trạng thái `onToggleStatus` được gọi đúng 1 lần.
+  3. Kiểm tra khi bài tập đã hoàn thành (`status: 'completed'`) thì ô checkbox hiển thị đúng dấu tích `✓`.
+- **Lệnh thực thi**: Gõ `npm test` trong Terminal $\rightarrow$ Kết quả: **3/3 bài kiểm thử PASS 100%**.
+- **Tại sao phải làm bước cuối cùng này?**:
+  Để chứng minh với Thầy Vinh rằng ứng dụng được phát triển theo tiêu chuẩn kỹ thuật phần mềm nghiêm ngặt: có kiểm thử tự động (Unit Test / Component Test) để chứng thực các tiêu chuẩn trợ năng và tương tác trước khi bàn giao.
+- 🗣️ **Khi Thầy hỏi**: *"Bước 9 em làm gì?"*  
+  👉 *"Dạ bước cuối cùng em viết bộ kiểm thử tự động với Jest để kiểm chứng độc lập tiêu chuẩn trợ năng 44x44pt và sự kiện chuyển trạng thái bài tập, đạt kết quả 3/3 test đậu tuyệt đối."*
+
+---
+
+## PHẦN 4: BỘ CÂU HỎI & TRẢ LỜI THEO TỪNG FILE
+
+### 4.1. NHÓM FRONTEND, UI/UX, NAVIGATION & NOTIFICATION (TV1)
 
 #### 📄 File 1: `src/constants/tokens.ts`
 - **Chức năng**: Khai báo bảng màu `Colors.light` và `Colors.dark`, hệ thống khoảng cách `Spacing` (4, 8, 16, 24, 32), và kích thước vùng bấm `TouchTarget` (min 44x44).
@@ -185,7 +367,7 @@
 
 ---
 
-### 3.2. NHÓM DATA LAYER, CORE LOGIC, OFFLINE & STATE (TV2 & GIAO THOA)
+### 4.2. NHÓM DATA LAYER, CORE LOGIC, OFFLINE & STATE (TV2 & GIAO THOA)
 
 *(Kể cả bạn là TV1, Thầy Vinh vẫn có thể hỏi bạn các đoạn mã này! Hãy nắm chắc các câu trả lời sau)*
 
@@ -230,7 +412,7 @@
 
 ---
 
-## PHẦN 4: KỊCH BẢN 10 CÂU HỎI "BẪY GÓC" KHÓ NHẰN CỦA THẦY VINH
+## PHẦN 5: KỊCH BẢN 10 CÂU HỎI "BẪY GÓC" KHÓ NHẰN CỦA THẦY VINH
 
 ### Câu 1: "Tại sao token phiên đăng nhập (Auth Session) không lưu vào AsyncStorage cho tiện mà phải dùng SecureStore?"
 - **Trả lời**: `AsyncStorage` lưu dữ liệu dưới dạng văn bản thuần (Plain text) không mã hóa trên bộ nhớ máy, nếu điện thoại bị root/jailbreak hoặc cài ứng dụng độc hại thì token rất dễ bị đánh cắp. `SecureStore` sử dụng phần cứng bảo mật Keychain (trên iOS) và KeyStore (trên Android) có mã hóa AES chuẩn bảo mật cấp hệ điều hành.
@@ -270,7 +452,7 @@
 
 ---
 
-## PHẦN 5: BẢNG TRA CỨU NHANH: THẦY HỎI GÌ -> MỞ NGAY DÒNG NÀO
+## PHẦN 6: BẢNG TRA CỨU NHANH: THẦY HỎI GÌ -> MỞ NGAY DÒNG NÀO
 
 | Thầy Vinh hỏi chủ đề | Tên file cần mở ngay | Dòng code trọng tâm |
 | :--- | :--- | :--- |
