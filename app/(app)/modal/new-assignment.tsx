@@ -22,6 +22,7 @@ import { ThemedView } from '../../../src/components/ui/ThemedView';
 import { ThemedText } from '../../../src/components/ui/ThemedText';
 import { AccessibleButton } from '../../../src/components/ui/AccessibleButton';
 import { useCourses } from '../../../src/hooks/useCourses';
+import { useAssignments, useCreateAssignment } from '../../../src/hooks/useAssignments';
 import { useThemeColor } from '../../../src/hooks/useThemeColor';
 import { scheduleAssignmentNotification } from '../../../src/hooks/useNotifications';
 import { Spacing, TouchTarget } from '../../../src/constants/tokens';
@@ -29,8 +30,8 @@ import { Spacing, TouchTarget } from '../../../src/constants/tokens';
 export default function NewAssignmentModal() {
   const colors = useThemeColor();
   const router = useRouter();
-  const queryClient = useQueryClient();
   const { data: courses = [] } = useCourses();
+  const createAssignmentMutation = useCreateAssignment();
 
   const [title, setTitle] = useState('');
   const [courseId, setCourseId] = useState(courses[0]?.id || '1');
@@ -50,41 +51,36 @@ export default function NewAssignmentModal() {
     }
   };
 
-  // Mutation tạo bài tập mới
-  const createMutation = useMutation({
-    mutationFn: async () => {
-      // Mặc định deadline là 24 giờ tới nếu không chọn
-      const defaultDue = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  const handleSave = async () => {
+    if (!title.trim()) {
+      alert('Vui lòng nhập tên bài tập!');
+      return;
+    }
 
-      const res = await fetch('https://66dd46d3f47a05d55be55308.mockapi.io/api/v1/assignments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title,
-          courseId,
-          notes,
-          photoUri,
-          status: 'pending',
-          dueAt: defaultDue.toISOString(),
-        }),
-      });
-      const data = await res.json();
+    const defaultDue = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-      // Lập lịch thông báo trước hạn nộp
-      try {
-        const triggerDate = new Date(Date.now() + 23 * 60 * 60 * 1000); // Báo trước 1 tiếng
-        await scheduleAssignmentNotification(data.id, title, triggerDate);
-      } catch {
-        // Bỏ qua lỗi notification trên môi trường dev/web
+    createAssignmentMutation.mutate(
+      {
+        title,
+        courseId,
+        notes: notes || undefined,
+        photoUri: photoUri || undefined,
+        status: 'pending',
+        dueAt: defaultDue.toISOString(),
+      },
+      {
+        onSuccess: async (data) => {
+          try {
+            const triggerDate = new Date(Date.now() + 23 * 60 * 60 * 1000);
+            await scheduleAssignmentNotification(data.id, title, triggerDate);
+          } catch {
+            // Web / mock environment
+          }
+          router.back();
+        },
       }
-
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['assignments'] });
-      router.back();
-    },
-  });
+    );
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -144,14 +140,8 @@ export default function NewAssignmentModal() {
         {/* Nút Lưu bài tập */}
         <View style={{ marginTop: Spacing.xl }}>
           <AccessibleButton
-            title={createMutation.isPending ? 'Đang lưu...' : '💾 Lưu bài tập mới'}
-            onPress={() => {
-              if (!title.trim()) {
-                alert('Vui lòng nhập tên bài tập!');
-                return;
-              }
-              createMutation.mutate();
-            }}
+            title={createAssignmentMutation.isPending ? 'Đang lưu...' : '💾 Lưu bài tập mới'}
+            onPress={handleSave}
             accessibilityLabel="Lưu bài tập mới vào hệ thống"
           />
         </View>
