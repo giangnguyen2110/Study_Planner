@@ -43,6 +43,7 @@ import {
   ScrollView,
   RefreshControl,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ThemedView } from '../../../src/components/ui/ThemedView';
@@ -54,6 +55,7 @@ import { StateHandler } from '../../../src/components/ui/StateHandler';
 import { useAssignments, useToggleAssignment } from '../../../src/hooks/useAssignments';
 import { useCourses } from '../../../src/hooks/useCourses';
 import { useThemeColor } from '../../../src/hooks/useThemeColor';
+import { triggerImmediateDemoNotification } from '../../../src/hooks/useNotifications';
 import { Spacing, TouchTarget } from '../../../src/constants/tokens';
 
 // ============================================================================
@@ -95,6 +97,28 @@ export default function HomeScreen() {
   });
 
   /**
+   * Kích hoạt thông báo nhắc deadline ngay tức thì (sau 2 giây) phục vụ Demo Viva
+   * Giúp sinh viên và Thầy thấy rõ hiệu ứng Deep Linking nhảy từ Trang Chủ vào Chi Tiết Bài Tập!
+   */
+  const handleTriggerHomeDemoNotification = async () => {
+    const targetTask = priorityTasks[0] || assignments[0];
+    if (!targetTask) {
+      Alert.alert('Thông báo', 'Hiện tại bạn chưa có bài tập nào để hẹn giờ thông báo.');
+      return;
+    }
+
+    try {
+      await triggerImmediateDemoNotification(targetTask.id, targetTask.title);
+      Alert.alert(
+        'Đã đặt nhắc nhở! ⏰',
+        `Sau đúng 2 giây, thông báo hạn chót cho bài tập "${targetTask.title}" sẽ xuất hiện trên thanh trạng thái điện thoại.\n\n👉 Bạn hãy đứng yên tại Trang Chủ này và chạm vào thông báo để xem app tự động phóng thẳng vào màn hình chi tiết bài tập nhé!`
+      );
+    } catch {
+      Alert.alert('Thông báo', 'Không thể kích hoạt thông báo cục bộ.');
+    }
+  };
+
+  /**
    * BƯỚC 3: RENDER TOÀN BỘ GIAO DIỆN MÀN HÌNH HOME
    */
   return (
@@ -112,7 +136,9 @@ export default function HomeScreen() {
           refreshControl={
             <RefreshControl
               refreshing={isFetching}
-              onRefresh={refetch}
+              onRefresh={() => {
+                refetch();
+              }}
               tintColor={colors.tint}
             />
           }
@@ -127,6 +153,34 @@ export default function HomeScreen() {
             <ThemedText secondary style={styles.greetingSubtitle}>
               Hôm nay là {todayDateString}
             </ThemedText>
+          </View>
+
+          {/* ================================================================ */}
+          {/* PHẦN 1.5: KHỐI DEMO NOTIFICATION & DEEP LINKING (MUST-HAVE #4)   */}
+          {/* ĐẶT NGAY TẠI TRANG CHỦ ĐỂ DEMO HIỆU ỨNG NHẢY VÀO CHI TIẾT        */}
+          {/* ================================================================ */}
+          <View
+            style={[
+              styles.demoCard,
+              { backgroundColor: colors.surface, borderColor: colors.tint },
+            ]}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <View style={{ flex: 1, paddingRight: Spacing.sm }}>
+                <ThemedText style={{ fontSize: 15, fontWeight: '800', color: colors.tint }}>
+                  🔔 Demo Deep Linking (Sau 2s)
+                </ThemedText>
+                <ThemedText secondary style={{ fontSize: 12, marginTop: 2, lineHeight: 16 }}>
+                  Bấm nút để nhận thông báo hạn chót, chạm vào thấy app tự phóng vào chi tiết!
+                </ThemedText>
+              </View>
+              <AccessibleButton
+                title="Bấm Demo 🔔"
+                onPress={handleTriggerHomeDemoNotification}
+                accessibilityLabel="Kích hoạt thông báo deadline sau 2 giây để demo Deep Linking"
+                variant="primary"
+              />
+            </View>
           </View>
 
           {/* ================================================================ */}
@@ -369,5 +423,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  demoCard: {
+    padding: Spacing.md,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    marginBottom: Spacing.md,
   },
 });
