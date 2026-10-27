@@ -47,23 +47,74 @@ export default function NewAssignmentModal() {
     return d;
   });
 
+  // Quản lý tháng / năm trên cuốn lịch chọn ngày
+  const [calMonth, setCalMonth] = useState<number>(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.getMonth();
+  });
+  const [calYear, setCalYear] = useState<number>(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.getFullYear();
+  });
+
+  // Chuyển tháng trên lịch
+  const handlePrevMonth = () => {
+    if (calMonth === 0) {
+      setCalMonth(11);
+      setCalYear((y) => y - 1);
+    } else {
+      setCalMonth((m) => m - 1);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (calMonth === 11) {
+      setCalMonth(0);
+      setCalYear((y) => y + 1);
+    } else {
+      setCalMonth((m) => m + 1);
+    }
+  };
+
+  // Chọn 1 ngày cụ thể trên lịch
+  const handleSelectDay = (day: number) => {
+    const d = new Date(dueDate);
+    d.setFullYear(calYear, calMonth, day);
+    setDueDate(d);
+  };
+
+  // Chọn giờ nộp bài tập
+  const handleSelectTime = (hours: number, minutes = 0) => {
+    const d = new Date(dueDate);
+    d.setHours(hours, minutes, 0, 0);
+    setDueDate(d);
+  };
+
   // Các hàm chọn nhanh thời hạn nộp bài
   const handleSelectPreset = (daysFromNow: number, hours = 23, minutes = 59) => {
     const d = new Date();
     d.setDate(d.getDate() + daysFromNow);
     d.setHours(hours, minutes, 0, 0);
     setDueDate(d);
+    setCalMonth(d.getMonth());
+    setCalYear(d.getFullYear());
   };
 
   const handleSelectHoursFromNow = (hoursToAdd: number) => {
     const d = new Date(Date.now() + hoursToAdd * 3600 * 1000);
     setDueDate(d);
+    setCalMonth(d.getMonth());
+    setCalYear(d.getFullYear());
   };
 
   const handleAdjustDays = (days: number) => {
     const d = new Date(dueDate);
     d.setDate(d.getDate() + days);
     setDueDate(d);
+    setCalMonth(d.getMonth());
+    setCalYear(d.getFullYear());
   };
 
   const handleAdjustHours = (hours: number) => {
@@ -149,7 +200,7 @@ export default function NewAssignmentModal() {
         </View>
 
         {/* ================================================================ */}
-        {/* PHẦN CHỌN HẠN NỘP BÀI TẬP (DEADLINE PICKER)                     */}
+        {/* PHẦN CHỌN HẠN NỘP BÀI TẬP (DEADLINE PICKER & INTERACTIVE CALENDAR) */}
         {/* ================================================================ */}
         <ThemedText style={styles.label}>Hạn nộp bài tập (*)</ThemedText>
 
@@ -174,61 +225,13 @@ export default function NewAssignmentModal() {
               </View>
             )}
           </View>
-
-          {/* Các nút tinh chỉnh (+/- ngày, +/- giờ) */}
-          <View style={styles.adjustRow}>
-            <TouchableOpacity
-              accessibilityRole="button"
-              accessibilityLabel="Lùi hạn nộp 1 ngày"
-              onPress={() => handleAdjustDays(-1)}
-              style={[styles.adjustBtn, { borderColor: colors.border, backgroundColor: colors.background }]}
-            >
-              <Text style={{ color: colors.textPrimary, fontSize: 12, fontWeight: '600' }}>- 1 Ngày</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              accessibilityRole="button"
-              accessibilityLabel="Tăng hạn nộp 1 ngày"
-              onPress={() => handleAdjustDays(1)}
-              style={[styles.adjustBtn, { borderColor: colors.border, backgroundColor: colors.background }]}
-            >
-              <Text style={{ color: colors.textPrimary, fontSize: 12, fontWeight: '600' }}>+ 1 Ngày</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              accessibilityRole="button"
-              accessibilityLabel="Lùi hạn nộp 1 giờ"
-              onPress={() => handleAdjustHours(-1)}
-              style={[styles.adjustBtn, { borderColor: colors.border, backgroundColor: colors.background }]}
-            >
-              <Text style={{ color: colors.textPrimary, fontSize: 12, fontWeight: '600' }}>- 1 Giờ</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              accessibilityRole="button"
-              accessibilityLabel="Tăng hạn nộp 1 giờ"
-              onPress={() => handleAdjustHours(1)}
-              style={[styles.adjustBtn, { borderColor: colors.border, backgroundColor: colors.background }]}
-            >
-              <Text style={{ color: colors.textPrimary, fontSize: 12, fontWeight: '600' }}>+ 1 Giờ</Text>
-            </TouchableOpacity>
-          </View>
         </View>
 
         {/* Các phím chọn nhanh hạn nộp */}
         <ThemedText secondary style={{ fontSize: 12, marginTop: Spacing.xs, marginBottom: Spacing.xs }}>
-          ⚡ Phím chọn nhanh thời hạn:
+          ⚡ Phím chọn nhanh:
         </ThemedText>
         <View style={styles.presetsRow}>
-          <TouchableOpacity
-            accessibilityRole="button"
-            accessibilityLabel="Chọn hạn nộp hôm nay 23:59"
-            onPress={() => handleSelectPreset(0)}
-            style={[styles.presetChip, { borderColor: colors.border, backgroundColor: colors.surface }]}
-          >
-            <Text style={{ fontSize: 12, color: colors.textPrimary, fontWeight: '600' }}>Hôm nay (23:59)</Text>
-          </TouchableOpacity>
-
           <TouchableOpacity
             accessibilityRole="button"
             accessibilityLabel="Chọn hạn nộp ngày mai"
@@ -264,6 +267,142 @@ export default function NewAssignmentModal() {
           >
             <Text style={{ fontSize: 12, color: colors.textPrimary, fontWeight: '600' }}>1 tuần nữa</Text>
           </TouchableOpacity>
+        </View>
+
+        {/* CUỐN LỊCH CHỌN NGÀY TRỰC QUAN (INTERACTIVE CALENDAR) */}
+        <View style={[styles.calendarBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          {/* Thanh chuyển tháng */}
+          <View style={styles.calHeader}>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Xem tháng trước"
+              onPress={handlePrevMonth}
+              style={[styles.calNavBtn, { borderColor: colors.border }]}
+            >
+              <Text style={{ color: colors.textPrimary, fontSize: 16, fontWeight: 'bold' }}>◀</Text>
+            </TouchableOpacity>
+
+            <ThemedText style={{ fontSize: 15, fontWeight: '800', color: colors.tint }}>
+              {[
+                'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+                'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
+              ][calMonth]}, {calYear}
+            </ThemedText>
+
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Xem tháng sau"
+              onPress={handleNextMonth}
+              style={[styles.calNavBtn, { borderColor: colors.border }]}
+            >
+              <Text style={{ color: colors.textPrimary, fontSize: 16, fontWeight: 'bold' }}>▶</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Hàng tên thứ (T2 -> CN) */}
+          <View style={styles.weekdaysRow}>
+            {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((w, idx) => (
+              <Text
+                key={idx}
+                style={[
+                  styles.weekdayText,
+                  { color: idx >= 5 ? colors.warning : colors.textSecondary },
+                ]}
+              >
+                {w}
+              </Text>
+            ))}
+          </View>
+
+          {/* Lưới các ngày trong tháng */}
+          <View style={styles.daysGrid}>
+            {/* Các ô trống trước ngày mùng 1 */}
+            {Array.from({ length: (new Date(calYear, calMonth, 1).getDay() + 6) % 7 }).map((_, i) => (
+              <View key={`empty-${i}`} style={styles.dayCell} />
+            ))}
+
+            {/* Các ngày trong tháng */}
+            {Array.from({ length: new Date(calYear, calMonth + 1, 0).getDate() }, (_, i) => i + 1).map((day) => {
+              const isSelected =
+                dueDate.getDate() === day &&
+                dueDate.getMonth() === calMonth &&
+                dueDate.getFullYear() === calYear;
+
+              const today = new Date();
+              const isToday =
+                today.getDate() === day &&
+                today.getMonth() === calMonth &&
+                today.getFullYear() === calYear;
+
+              return (
+                <View key={`day-${day}`} style={styles.dayCell}>
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel={`Chọn ngày ${day} tháng ${calMonth + 1} năm ${calYear}`}
+                    onPress={() => handleSelectDay(day)}
+                    style={[
+                      styles.dayButton,
+                      isSelected && { backgroundColor: colors.tint },
+                      isToday && !isSelected && { borderWidth: 1.5, borderColor: colors.tint },
+                    ]}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 13,
+                        fontWeight: isSelected || isToday ? '700' : '500',
+                        color: isSelected ? colors.surface : colors.textPrimary,
+                      }}
+                    >
+                      {day}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              );
+            })}
+          </View>
+
+          {/* Chọn giờ nộp bài */}
+          <View style={[styles.timeRow, { borderTopColor: colors.border }]}>
+            <ThemedText secondary style={{ fontSize: 12, fontWeight: '700', alignSelf: 'center' }}>
+              ⏰ Giờ:
+            </ThemedText>
+            <View style={styles.timeChips}>
+              {[
+                { label: '23:59', h: 23, m: 59 },
+                { label: '17:00', h: 17, m: 0 },
+                { label: '12:00', h: 12, m: 0 },
+                { label: '08:00', h: 8, m: 0 },
+              ].map((t) => {
+                const isTimeSelected =
+                  dueDate.getHours() === t.h && dueDate.getMinutes() === t.m;
+                return (
+                  <TouchableOpacity
+                    key={t.label}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Chọn giờ nộp ${t.label}`}
+                    onPress={() => handleSelectTime(t.h, t.m)}
+                    style={[
+                      styles.timeChip,
+                      {
+                        backgroundColor: isTimeSelected ? colors.tint : colors.background,
+                        borderColor: isTimeSelected ? colors.tint : colors.border,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 11,
+                        fontWeight: '600',
+                        color: isTimeSelected ? colors.surface : colors.textPrimary,
+                      }}
+                    >
+                      {t.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
         </View>
 
         {/* Ghi chú */}
@@ -371,9 +510,81 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.xs,
-    marginBottom: Spacing.xs,
+    marginBottom: Spacing.sm,
   },
   presetChip: {
+    paddingHorizontal: Spacing.sm,
+    minHeight: TouchTarget.minHeight,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  calendarBox: {
+    padding: Spacing.sm,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginTop: Spacing.xs,
+    marginBottom: Spacing.sm,
+  },
+  calHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+    paddingHorizontal: Spacing.xs,
+  },
+  calNavBtn: {
+    minHeight: TouchTarget.minHeight,
+    minWidth: TouchTarget.minHeight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  weekdaysRow: {
+    flexDirection: 'row',
+    marginBottom: Spacing.xs,
+  },
+  weekdayText: {
+    width: '14.28%',
+    textAlign: 'center',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  daysGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  dayCell: {
+    width: '14.28%',
+    minHeight: TouchTarget.minHeight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 2,
+  },
+  dayButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  timeRow: {
+    flexDirection: 'row',
+    borderTopWidth: 1,
+    paddingTop: Spacing.sm,
+    marginTop: Spacing.xs,
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  timeChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    flex: 1,
+  },
+  timeChip: {
     paddingHorizontal: Spacing.sm,
     minHeight: TouchTarget.minHeight,
     borderRadius: 8,
