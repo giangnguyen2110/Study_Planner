@@ -26,17 +26,24 @@ interface Props {
 export function OfflineBanner({ isOffline, savedTime }: Props) {
   const colors = useThemeColor();
 
-  // Nếu không mất mạng hoặc chưa có mốc thời gian lưu thì không hiển thị
-  if (!isOffline || !savedTime) {
+  // Nếu không mất mạng thì không hiển thị
+  if (!isOffline) {
     return null;
   }
 
   // Định dạng mốc thời gian lưu dữ liệu
-  const formattedTime = new Date(savedTime).toLocaleTimeString('vi-VN', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  });
+  let formattedTime = 'gần nhất';
+  try {
+    if (savedTime) {
+      formattedTime = new Date(savedTime).toLocaleTimeString('vi-VN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      });
+    }
+  } catch {
+    formattedTime = 'gần nhất';
+  }
 
   return (
     <View
