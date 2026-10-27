@@ -59,7 +59,6 @@ import {
   useOfflineCacheTime,
   useIsOffline,
   useNetworkMonitor,
-  useSimulatedOffline,
 } from '../../../src/hooks/useAssignments';
 import { useCourses } from '../../../src/hooks/useCourses';
 import { useThemeColor, useThemePreference } from '../../../src/hooks/useThemeColor';
@@ -87,7 +86,6 @@ export default function HomeScreen() {
   const toggleMutation = useToggleAssignment();
   useNetworkMonitor();
   const isOffline = useIsOffline();
-  const { simulatedOffline, toggleSimulatedOffline } = useSimulatedOffline();
   const cachedTime = useOfflineCacheTime();
 
   // BƯỚC 2.2: Tính toán các số liệu thống kê nhanh cho Dashboard
@@ -175,41 +173,21 @@ export default function HomeScreen() {
                 </ThemedText>
               </View>
 
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.xs }}>
-                {/* Nút Test / Trạng thái Mạng Offline (Tiêu chí bắt buộc #6) */}
-                <TouchableOpacity
-                  accessibilityRole="button"
-                  accessibilityLabel={isOffline ? "Đang ngoại tuyến, chạm để thử kết nối lại" : "Đang trực tuyến, chạm để thử nghiệm chế độ ngoại tuyến"}
-                  onPress={toggleSimulatedOffline}
-                  style={[
-                    styles.networkStatusBtn,
-                    {
-                      backgroundColor: isOffline ? colors.warning + '20' : colors.surface,
-                      borderColor: isOffline ? colors.warning : colors.border,
-                    },
-                  ]}
-                >
-                  <Text style={{ fontSize: 12, fontWeight: '700', color: isOffline ? colors.warning : colors.textSecondary }}>
-                    {isOffline ? '📴 Offline' : '📶 Online'}
-                  </Text>
-                </TouchableOpacity>
-
-                {/* Nút chuyển đổi nhanh Sáng / Tối */}
-                <TouchableOpacity
-                  accessibilityRole="button"
-                  accessibilityLabel={`Chuyển sang chế độ ${activeTheme === 'dark' ? 'sáng' : 'tối'}`}
-                  onPress={() => setThemePreference(activeTheme === 'dark' ? 'light' : 'dark')}
-                  style={[
-                    styles.themeToggleBtn,
-                    {
-                      backgroundColor: colors.surface,
-                      borderColor: colors.border,
-                    },
-                  ]}
-                >
-                  <Text style={{ fontSize: 18 }}>{activeTheme === 'dark' ? '🌙' : '☀️'}</Text>
-                </TouchableOpacity>
-              </View>
+              {/* Nút chuyển đổi nhanh Sáng / Tối */}
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel={`Chuyển sang chế độ ${activeTheme === 'dark' ? 'sáng' : 'tối'}`}
+                onPress={() => setThemePreference(activeTheme === 'dark' ? 'light' : 'dark')}
+                style={[
+                  styles.themeToggleBtn,
+                  {
+                    backgroundColor: colors.surface,
+                    borderColor: colors.border,
+                  },
+                ]}
+              >
+                <Text style={{ fontSize: 18 }}>{activeTheme === 'dark' ? '🌙' : '☀️'}</Text>
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -496,13 +474,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: Spacing.xs,
-  },
-  networkStatusBtn: {
-    minHeight: TouchTarget.minHeight,
-    paddingHorizontal: Spacing.sm,
-    borderRadius: 10,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });

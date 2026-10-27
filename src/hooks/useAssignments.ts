@@ -10,8 +10,8 @@
  * 1. CẬP NHẬT LẠC QUAN (OPTIMISTIC UPDATES) & TỰ ĐỘNG ROLLBACK: Khi tick hoàn thành bài tập,
  *    giao diện đổi trạng thái ngay lập tức; nếu API lỗi thì tự động rollback về trạng thái cũ.
  * 2. BỘ NHỚ ĐỆM NGOẠI TUYẾN (OFFLINE CACHE): Lưu dữ liệu vào AsyncStorage kèm mốc thời gian.
- * 3. TỰ ĐỘNG GIÁM SÁT KẾT NỐI MẠNG (OFFLINE MONITOR): Tự động phát hiện khi thiết bị mất Wi-Fi/mạng
- *    để kích hoạt OfflineBanner màu hổ phách theo đúng Yêu cầu bắt buộc số 6 của Thầy Nguyễn Xuân Vinh.
+ * 3. TỰ ĐỘNG GIÁM SÁT KẾT NỐI MẠNG (OFFLINE TOLERANCE): Khi mất mạng/tắt Wi-Fi, tự động bật
+ *    OfflineBanner màu hổ phách và bảo toàn toàn bộ dữ liệu thao tác trong AsyncStorage.
  * 
  * 🎓 CÂU HỎI VẤN ĐÁP (VIVA) CỦA THẦY NGUYỄN XUÂN VINH:
  * - Câu hỏi: "Cập nhật lạc quan (Optimistic update) trong code của nhóm hoạt động ra sao nếu rớt mạng?"
@@ -35,97 +35,45 @@ const CACHE_TIMESTAMP_KEY = 'cached_assignments_timestamp';
 
 /**
  * Trạng thái kết nối mạng ngoại tuyến (Network & Offline State Store)
- * Quản lý trạng thái Online/Offline đồng bộ toàn ứng dụng và hỗ trợ chế độ giả lập offline để quay video demo.
+ * Quản lý trạng thái Online/Offline đồng bộ toàn ứng dụng.
  */
 interface NetworkState {
   isOffline: boolean;
   cachedTime: string | null;
-  simulatedOffline: boolean;
   setIsOffline: (isOffline: boolean) => void;
   setCachedTime: (cachedTime: string | null) => void;
-  setSimulatedOffline: (simulatedOffline: boolean) => void;
 }
 
 export const useNetworkStore = create<NetworkState>((set) => ({
   isOffline: false,
   cachedTime: null,
-  simulatedOffline: false,
   setIsOffline: (isOffline) => set({ isOffline }),
   setCachedTime: (cachedTime) => set({ cachedTime }),
-  setSimulatedOffline: (simulatedOffline) => set({ simulatedOffline }),
 }));
 
 /**
  * Hook trả về trạng thái ngoại tuyến (Offline)
  */
 export function useIsOffline(): boolean {
-  return useNetworkStore((state) => state.isOffline || state.simulatedOffline);
+  return useNetworkStore((state) => state.isOffline);
 }
 
 /**
- * Hook hỗ trợ bật/tắt chế độ giả lập Offline khi quay video demo đồ án
- */
-export function useSimulatedOffline() {
-  const simulatedOffline = useNetworkStore((state) => state.simulatedOffline);
-  const setSimulatedOffline = useNetworkStore((state) => state.setSimulatedOffline);
-  const queryClient = useQueryClient();
-
-  const toggleSimulatedOffline = () => {
-    const nextVal = !simulatedOffline;
-    setSimulatedOffline(nextVal);
-    queryClient.invalidateQueries({ queryKey: ['assignments'] });
-  };
-
-  return { simulatedOffline, toggleSimulatedOffline };
-}
-
-/**
- * Hook giám sát kết nối mạng chủ động (Active Network Monitor)
- * 1. Tự động kiểm tra mạng khi mở app (AppState active)
- * 2. Lắng nghe trạng thái Online/Offline trên Web
- * 3. Kiểm tra định kỳ để kích hoạt OfflineBanner ngay khi tắt Wi-Fi
+ * Hook giám sát kết nối mạng thông minh (Network Monitor)
+ * 1. Khởi tạo mốc thời gian lưu trữ từ AsyncStorage
+ * 2. Trên Web: Lắng nghe sự kiện Online/Offline chuẩn của trình duyệt
+ * 3. Trên Mobile: Lắng nghe thay đổi AppState
  */
 export function useNetworkMonitor() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    // 1. Tải mốc thời gian lưu trữ từ AsyncStorage
+    // 1. Tải mốc thời gian lưu trữ gần nhất từ AsyncStorage
     AsyncStorage.getItem(CACHE_TIMESTAMP_KEY).then((time) => {
       if (time) useNetworkStore.getState().setCachedTime(time);
     });
 
-    // 2. Hàm kiểm tra mạng chủ động (Active Ping)
-    const checkNetwork = async () => {
-      if (useNetworkStore.getState().simulatedOffline) return;
-      try {
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 3500);
-        const res = await fetch(API_URL, { method: 'GET', signal: controller.signal });
-        clearTimeout(timeout);
-        if (res.ok) {
-          if (useNetworkStore.getState().isOffline) {
-            useNetworkStore.getState().setIsOffline(false);
-            queryClient.invalidateQueries({ queryKey: ['assignments'] });
-          }
-        } else {
-          useNetworkStore.getState().setIsOffline(true);
-        }
-      } catch {
-        useNetworkStore.getState().setIsOffline(true);
-      }
-    };
-
-    // Kiểm tra ngay khi mount
-    checkNetwork();
-
-    // 3. Lắng nghe thay đổi AppState (khi ứng dụng chuyển sang foreground)
-    const appStateSub = AppState.addEventListener('change', (nextState) => {
-      if (nextState === 'active') {
-        checkNetwork();
-      }
-    });
-
-    // 4. Lắng nghe sự kiện Online/Offline trên Web
+    // 2. Trên nền tảng Web: Lắng nghe chính xác sự kiện Online/Offline của thiết bị
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
       const handleOnline = () => {
         useNetworkStore.getState().setIsOffline(false);
@@ -134,26 +82,43 @@ export function useNetworkMonitor() {
       const handleOffline = () => {
         useNetworkStore.getState().setIsOffline(true);
       };
+
       window.addEventListener('online', handleOnline);
       window.addEventListener('offline', handleOffline);
 
+      // Đồng bộ trạng thái ban đầu của trình duyệt
       if (typeof navigator !== 'undefined' && !navigator.onLine) {
         useNetworkStore.getState().setIsOffline(true);
+      } else {
+        useNetworkStore.getState().setIsOffline(false);
       }
 
       return () => {
-        appStateSub.remove();
         window.removeEventListener('online', handleOnline);
         window.removeEventListener('offline', handleOffline);
       };
     }
 
-    // 5. Kiểm tra định kỳ mỗi 8 giây trên Mobile
-    const interval = setInterval(checkNetwork, 8000);
+    // 3. Trên nền tảng Mobile: Kiểm tra khi ứng dụng quay lại màn hình chính (AppState active)
+    const appStateSub = AppState.addEventListener('change', async (nextState) => {
+      if (nextState === 'active') {
+        try {
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 3000);
+          const res = await fetch(API_URL, { method: 'GET', signal: controller.signal });
+          clearTimeout(timeout);
+          if (res.ok) {
+            useNetworkStore.getState().setIsOffline(false);
+            queryClient.invalidateQueries({ queryKey: ['assignments'] });
+          }
+        } catch {
+          // Bỏ qua lỗi ngầm
+        }
+      }
+    });
 
     return () => {
       appStateSub.remove();
-      clearInterval(interval);
     };
   }, [queryClient]);
 }
@@ -250,15 +215,6 @@ export function getDefaultAssignments(): AssignmentItem[] {
 
 // Hàm tải danh sách bài tập từ Remote API kèm cơ chế Offline Fallback
 async function fetchAssignments(): Promise<AssignmentItem[]> {
-  const isSimulated = useNetworkStore.getState().simulatedOffline;
-  if (isSimulated) {
-    const cached = await AsyncStorage.getItem(CACHE_KEY);
-    const timestamp = (await AsyncStorage.getItem(CACHE_TIMESTAMP_KEY)) || new Date().toISOString();
-    useNetworkStore.getState().setIsOffline(true);
-    useNetworkStore.getState().setCachedTime(timestamp);
-    return cached ? JSON.parse(cached) : getDefaultAssignments();
-  }
-
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 4000);
@@ -277,12 +233,22 @@ async function fetchAssignments(): Promise<AssignmentItem[]> {
     useNetworkStore.getState().setCachedTime(now);
     return data;
   } catch {
-    // Nếu rớt mạng hoặc lỗi API, đọc dữ liệu từ Offline Cache AsyncStorage
+    // Xử lý khi không kết nối được Remote Server:
+    if (Platform.OS === 'web' && typeof navigator !== 'undefined') {
+      // Trên Web: Chỉ đánh dấu offline khi thiết bị thực sự ngắt mạng
+      if (!navigator.onLine) {
+        useNetworkStore.getState().setIsOffline(true);
+      }
+    } else {
+      // Trên Mobile: Đánh dấu trạng thái ngoại tuyến khi mất mạng
+      useNetworkStore.getState().setIsOffline(true);
+    }
+
     const now = new Date().toISOString();
     const cachedTime = (await AsyncStorage.getItem(CACHE_TIMESTAMP_KEY)) || now;
-    useNetworkStore.getState().setIsOffline(true);
     useNetworkStore.getState().setCachedTime(cachedTime);
 
+    // Đọc dữ liệu từ Offline Cache AsyncStorage để ứng dụng tiếp tục hoạt động mượt mà
     const cached = await AsyncStorage.getItem(CACHE_KEY);
     if (cached) {
       return JSON.parse(cached);
@@ -304,7 +270,7 @@ export function useAssignments() {
   });
 }
 
-// Hook đổi trạng thái bài tập (pending <-> completed) với OPTIMISTIC UPDATE
+// Hook đổi trạng thái bài tập (pending <-> completed) với OPTIMISTIC UPDATE & OFFLINE PERSISTENCE
 export function useToggleAssignment() {
   const queryClient = useQueryClient();
 
@@ -323,14 +289,16 @@ export function useToggleAssignment() {
           body: JSON.stringify({ status: newStatus }),
         });
         if (res.ok) {
+          useNetworkStore.getState().setIsOffline(false);
           return await res.json();
         }
       } catch {
-        useNetworkStore.getState().setIsOffline(true);
-        // Fallback ghi vào offline cache nếu không có kết nối mạng
+        if (Platform.OS !== 'web' || (typeof navigator !== 'undefined' && !navigator.onLine)) {
+          useNetworkStore.getState().setIsOffline(true);
+        }
       }
 
-      // Cập nhật Offline Storage
+      // Cập nhật Offline Storage để không bị mất dữ liệu khi offline
       const cached = await AsyncStorage.getItem(CACHE_KEY);
       if (cached) {
         const list: AssignmentItem[] = JSON.parse(cached);
@@ -387,14 +355,16 @@ export function useCreateAssignment() {
           body: JSON.stringify(newAssignment),
         });
         if (res.ok) {
+          useNetworkStore.getState().setIsOffline(false);
           return await res.json();
         }
       } catch {
-        useNetworkStore.getState().setIsOffline(true);
-        // Bỏ qua lỗi mạng
+        if (Platform.OS !== 'web' || (typeof navigator !== 'undefined' && !navigator.onLine)) {
+          useNetworkStore.getState().setIsOffline(true);
+        }
       }
 
-      // Tạo id tạm thời và ghi vào cache
+      // Tạo id tạm thời và ghi vào cache AsyncStorage khi offline
       const createdItem: AssignmentItem = {
         ...newAssignment,
         id: String(Date.now()),
