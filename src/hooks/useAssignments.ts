@@ -9,9 +9,9 @@
  * Tích hợp 2 kỹ thuật nâng cao quan trọng:
  * 1. CẬP NHẬT LẠC QUAN (OPTIMISTIC UPDATES) & TỰ ĐỘNG ROLLBACK: Khi tick hoàn thành bài tập,
  *    giao diện đổi trạng thái ngay lập tức; nếu API lỗi thì tự động rollback về trạng thái cũ.
- * 2. BỘ NHỚ ĐỆM NGOẠI TUYẾN (OFFLINE CACHE): Lưu dữ liệu vào AsyncStorage kèm mốc thời gian.
+ * 2. BỘ NHỚ ĐỆM NGOẠI TUYẾN (OFFLINE CACHE): Lưu dữ liệu vào AsyncStorage kèm mốc thời gian thực tế.
  * 3. TỰ ĐỘNG GIÁM SÁT KẾT NỐI MẠNG (OFFLINE TOLERANCE): Khi mất mạng/tắt Wi-Fi, tự động bật
- *    OfflineBanner màu hổ phách và bảo toàn toàn bộ dữ liệu thao tác trong AsyncStorage.
+ *    OfflineBanner màu hổ phách hiển thị CHÍNH XÁC THỜI GIAN THỰC TẾ và bảo toàn dữ liệu trong AsyncStorage.
  * 
  * 🎓 CÂU HỎI VẤN ĐÁP (VIVA) CỦA THẦY NGUYỄN XUÂN VINH:
  * - Câu hỏi: "Cập nhật lạc quan (Optimistic update) trong code của nhóm hoạt động ra sao nếu rớt mạng?"
@@ -79,8 +79,13 @@ export function useNetworkMonitor() {
         useNetworkStore.getState().setIsOffline(false);
         queryClient.invalidateQueries({ queryKey: ['assignments'] });
       };
+
       const handleOffline = () => {
+        // Cập nhật ngay thời gian thực tại thời điểm ngắt mạng
+        const now = new Date().toISOString();
         useNetworkStore.getState().setIsOffline(true);
+        useNetworkStore.getState().setCachedTime(now);
+        AsyncStorage.setItem(CACHE_TIMESTAMP_KEY, now);
       };
 
       window.addEventListener('online', handleOnline);
@@ -88,7 +93,10 @@ export function useNetworkMonitor() {
 
       // Đồng bộ trạng thái ban đầu của trình duyệt
       if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        const now = new Date().toISOString();
         useNetworkStore.getState().setIsOffline(true);
+        useNetworkStore.getState().setCachedTime(now);
+        AsyncStorage.setItem(CACHE_TIMESTAMP_KEY, now);
       } else {
         useNetworkStore.getState().setIsOffline(false);
       }
@@ -112,7 +120,10 @@ export function useNetworkMonitor() {
             queryClient.invalidateQueries({ queryKey: ['assignments'] });
           }
         } catch {
-          // Bỏ qua lỗi ngầm
+          const now = new Date().toISOString();
+          useNetworkStore.getState().setIsOffline(true);
+          useNetworkStore.getState().setCachedTime(now);
+          AsyncStorage.setItem(CACHE_TIMESTAMP_KEY, now);
         }
       }
     });
@@ -225,7 +236,7 @@ async function fetchAssignments(): Promise<AssignmentItem[]> {
     const data: AssignmentItem[] = await res.json();
     if (!Array.isArray(data)) throw new Error('Dữ liệu máy chủ không hợp lệ');
 
-    // Lưu vào AsyncStorage làm offline cache và lưu mốc thời gian
+    // Lưu vào AsyncStorage làm offline cache và lưu mốc thời gian thực tế
     const now = new Date().toISOString();
     await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(data));
     await AsyncStorage.setItem(CACHE_TIMESTAMP_KEY, now);
@@ -233,6 +244,11 @@ async function fetchAssignments(): Promise<AssignmentItem[]> {
     useNetworkStore.getState().setCachedTime(now);
     return data;
   } catch {
+    // Cập nhật mốc thời gian ngoại tuyến theo thời gian thực tế của máy
+    const now = new Date().toISOString();
+    useNetworkStore.getState().setCachedTime(now);
+    await AsyncStorage.setItem(CACHE_TIMESTAMP_KEY, now);
+
     // Xử lý khi không kết nối được Remote Server:
     if (Platform.OS === 'web' && typeof navigator !== 'undefined') {
       // Trên Web: Chỉ đánh dấu offline khi thiết bị thực sự ngắt mạng
@@ -244,10 +260,6 @@ async function fetchAssignments(): Promise<AssignmentItem[]> {
       useNetworkStore.getState().setIsOffline(true);
     }
 
-    const now = new Date().toISOString();
-    const cachedTime = (await AsyncStorage.getItem(CACHE_TIMESTAMP_KEY)) || now;
-    useNetworkStore.getState().setCachedTime(cachedTime);
-
     // Đọc dữ liệu từ Offline Cache AsyncStorage để ứng dụng tiếp tục hoạt động mượt mà
     const cached = await AsyncStorage.getItem(CACHE_KEY);
     if (cached) {
@@ -256,7 +268,6 @@ async function fetchAssignments(): Promise<AssignmentItem[]> {
     // Khởi tạo dữ liệu ban đầu nếu lần đầu mở ứng dụng chưa có cache
     const defaults = getDefaultAssignments();
     await AsyncStorage.setItem(CACHE_KEY, JSON.stringify(defaults));
-    await AsyncStorage.setItem(CACHE_TIMESTAMP_KEY, now);
     return defaults;
   }
 }
@@ -298,7 +309,11 @@ export function useToggleAssignment() {
         }
       }
 
-      // Cập nhật Offline Storage để không bị mất dữ liệu khi offline
+      // Cập nhật Offline Storage và cập nhật mốc thời gian lưu mới nhất theo giờ thực tế
+      const now = new Date().toISOString();
+      await AsyncStorage.setItem(CACHE_TIMESTAMP_KEY, now);
+      useNetworkStore.getState().setCachedTime(now);
+
       const cached = await AsyncStorage.getItem(CACHE_KEY);
       if (cached) {
         const list: AssignmentItem[] = JSON.parse(cached);
@@ -364,7 +379,11 @@ export function useCreateAssignment() {
         }
       }
 
-      // Tạo id tạm thời và ghi vào cache AsyncStorage khi offline
+      // Tạo id tạm thời và ghi vào cache AsyncStorage khi offline kèm thời gian thực
+      const now = new Date().toISOString();
+      await AsyncStorage.setItem(CACHE_TIMESTAMP_KEY, now);
+      useNetworkStore.getState().setCachedTime(now);
+
       const createdItem: AssignmentItem = {
         ...newAssignment,
         id: String(Date.now()),
