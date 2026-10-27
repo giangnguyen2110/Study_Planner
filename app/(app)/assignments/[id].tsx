@@ -9,12 +9,13 @@
  * - Là đích đến của cơ chế Deep Linking khi người dùng chạm vào Notification deadline.
  * - Hiển thị đầy đủ thông tin: Tiêu đề, môn học, hạn nộp, ghi chú.
  * - Hiển thị ảnh chụp đề bài / bảng ghi chép (`photoUri`) nếu có.
+ * - Cho phép bấm nút "🔔 Bật Nhắc Nhở Deadline" để kích hoạt thông báo sau 2s phục vụ DEMO VIVA.
  * - Cho phép bấm nút đánh dấu Đã Hoàn Thành / Chưa Hoàn Thành trực tiếp.
  * ============================================================================
  */
 
 import React from 'react';
-import { View, StyleSheet, Image, ScrollView } from 'react-native';
+import { View, StyleSheet, Image, ScrollView, Alert } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { ThemedView } from '../../../src/components/ui/ThemedView';
 import { ThemedText } from '../../../src/components/ui/ThemedText';
@@ -22,6 +23,7 @@ import { AccessibleButton } from '../../../src/components/ui/AccessibleButton';
 import { useAssignments, useToggleAssignment } from '../../../src/hooks/useAssignments';
 import { useCourses } from '../../../src/hooks/useCourses';
 import { useThemeColor } from '../../../src/hooks/useThemeColor';
+import { triggerImmediateDemoNotification } from '../../../src/hooks/useNotifications';
 import { Spacing } from '../../../src/constants/tokens';
 
 export default function AssignmentDetailScreen() {
@@ -45,6 +47,21 @@ export default function AssignmentDetailScreen() {
 
   const isCompleted = item.status === 'completed';
   const dueDateObj = new Date(item.dueAt);
+
+  /**
+   * Kích hoạt thông báo nhắc deadline ngay tức thì (sau 2 giây) để Demo Viva
+   */
+  const handleTriggerDemoNotification = async () => {
+    try {
+      await triggerImmediateDemoNotification(item.id, item.title);
+      Alert.alert(
+        'Đã đặt nhắc nhở! ⏰',
+        'Sau đúng 2 giây, thông báo deadline sẽ xuất hiện trên thanh trạng thái điện thoại.\n\nBạn hãy vuốt xuống và chạm vào thông báo để xem tính năng Deep Linking tự động mở lại trang này nhé!'
+      );
+    } catch {
+      Alert.alert('Thông báo', 'Không thể gửi thông báo cục bộ.');
+    }
+  };
 
   return (
     <ThemedView style={styles.container}>
@@ -77,6 +94,35 @@ export default function AssignmentDetailScreen() {
           </ThemedText>
         </View>
 
+        {/* ================================================================ */}
+        {/* KHỐI MUST-HAVE #4: LOCAL NOTIFICATION & DEEP LINKING DEMO       */}
+        {/* ĐẶT NGAY ĐÂY ĐỂ VỪA VÀO LÀ THẤY NGAY, KHÔNG CẦN CUỘN TRANG!     */}
+        {/* ================================================================ */}
+        <View
+          style={[
+            styles.notificationBox,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.tint,
+            },
+          ]}
+        >
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.xs }}>
+            <ThemedText style={{ fontSize: 16, fontWeight: '800', color: colors.tint }}>
+              🔔 Nhắc Nhở Deadline & Deep Linking
+            </ThemedText>
+          </View>
+          <ThemedText secondary style={{ fontSize: 13, marginBottom: Spacing.sm, lineHeight: 18 }}>
+            Bấm nút bên dưới để nhận thông báo sau 2 giây. Khi banner thả xuống, chạm vào thông báo để xem Deep Linking tự động mở lại bài tập này!
+          </ThemedText>
+          <AccessibleButton
+            title="🔔 Bật Nhắc Nhở Deadline (Nổ Sau 2s)"
+            onPress={handleTriggerDemoNotification}
+            accessibilityLabel="Kích hoạt thông báo nhắc deadline sau 2 giây để demo Deep Linking"
+            variant="primary"
+          />
+        </View>
+
         {/* Ghi chú thêm */}
         {item.notes ? (
           <View style={[styles.notesBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -99,8 +145,9 @@ export default function AssignmentDetailScreen() {
           </View>
         ) : null}
 
-        {/* Nút đổi trạng thái hoàn thành */}
-        <View style={{ marginTop: Spacing.xl }}>
+        {/* KHỐI CÁC NÚT THAO TÁC HOÀN THÀNH */}
+        <View style={styles.actionButtonGroup}>
+          {/* ĐỔI TRẠNG THÁI HOÀN THÀNH (OPTIMISTIC UPDATE) */}
           <AccessibleButton
             title={isCompleted ? 'Đánh dấu CHƯA HOÀN THÀNH' : 'Đánh dấu ĐÃ HOÀN THÀNH ✓'}
             onPress={() => {
@@ -168,10 +215,19 @@ const styles = StyleSheet.create({
   photoContainer: {
     marginTop: Spacing.sm,
   },
+  notificationBox: {
+    padding: Spacing.md,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    marginVertical: Spacing.md,
+  },
   image: {
     width: '100%',
     height: 240,
     borderRadius: 10,
     borderWidth: 1,
+  },
+  actionButtonGroup: {
+    marginTop: Spacing.xl,
   },
 });
