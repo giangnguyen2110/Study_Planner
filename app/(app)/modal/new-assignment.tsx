@@ -119,7 +119,25 @@ export default function NewAssignmentModal() {
 
   const handleAdjustHours = (hours: number) => {
     const d = new Date(dueDate);
-    d.setHours(d.getHours() + hours);
+    let h = d.getHours() + hours;
+    if (h < 0) h = 23;
+    else if (h > 23) h = 0;
+    d.setHours(h);
+    setDueDate(d);
+  };
+
+  const handleAdjustMinutes = (minutes: number) => {
+    const d = new Date(dueDate);
+    let m = d.getMinutes() + minutes;
+    if (m < 0) m = 55;
+    else if (m > 59) m = 0;
+    d.setMinutes(m);
+    setDueDate(d);
+  };
+
+  const handleSetMinute = (minute: number) => {
+    const d = new Date(dueDate);
+    d.setMinutes(minute);
     setDueDate(d);
   };
 
@@ -361,46 +379,121 @@ export default function NewAssignmentModal() {
             })}
           </View>
 
-          {/* Chọn giờ nộp bài */}
+          {/* CHỌN GIỜ & PHÚT NỘP BÀI CHI TIẾT (CUSTOM TIME PICKER) */}
           <View style={[styles.timeRow, { borderTopColor: colors.border }]}>
-            <ThemedText secondary style={{ fontSize: 12, fontWeight: '700', alignSelf: 'center' }}>
-              ⏰ Giờ:
-            </ThemedText>
-            <View style={styles.timeChips}>
-              {[
-                { label: '23:59', h: 23, m: 59 },
-                { label: '17:00', h: 17, m: 0 },
-                { label: '12:00', h: 12, m: 0 },
-                { label: '08:00', h: 8, m: 0 },
-              ].map((t) => {
-                const isTimeSelected =
-                  dueDate.getHours() === t.h && dueDate.getMinutes() === t.m;
-                return (
+            <View style={styles.timeHeaderRow}>
+              <ThemedText style={{ fontSize: 13, fontWeight: '700' }}>
+                ⏰ Giờ nộp bài:
+              </ThemedText>
+              <View style={[styles.timeDisplayBadge, { backgroundColor: colors.tint + '18', borderColor: colors.tint }]}>
+                <Text style={{ fontSize: 14, fontWeight: '800', color: colors.tint }}>
+                  {String(dueDate.getHours()).padStart(2, '0')}:{String(dueDate.getMinutes()).padStart(2, '0')}
+                </Text>
+              </View>
+            </View>
+
+            {/* Stepper điều chỉnh Giờ và Phút */}
+            <View style={styles.stepperContainer}>
+              {/* Cụm Giờ */}
+              <View style={styles.stepperGroup}>
+                <ThemedText secondary style={styles.stepperLabel}>GIỜ (0 - 23)</ThemedText>
+                <View style={styles.stepperControls}>
                   <TouchableOpacity
-                    key={t.label}
                     accessibilityRole="button"
-                    accessibilityLabel={`Chọn giờ nộp ${t.label}`}
-                    onPress={() => handleSelectTime(t.h, t.m)}
-                    style={[
-                      styles.timeChip,
-                      {
-                        backgroundColor: isTimeSelected ? colors.tint : colors.background,
-                        borderColor: isTimeSelected ? colors.tint : colors.border,
-                      },
-                    ]}
+                    accessibilityLabel="Giảm 1 giờ"
+                    onPress={() => handleAdjustHours(-1)}
+                    style={[styles.stepperBtn, { borderColor: colors.border, backgroundColor: colors.surface }]}
                   >
-                    <Text
-                      style={{
-                        fontSize: 11,
-                        fontWeight: '600',
-                        color: isTimeSelected ? colors.surface : colors.textPrimary,
-                      }}
-                    >
-                      {t.label}
-                    </Text>
+                    <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.textPrimary }}>−</Text>
                   </TouchableOpacity>
-                );
-              })}
+                  <View style={[styles.stepperValueBox, { borderColor: colors.border, backgroundColor: colors.background }]}>
+                    <Text style={{ fontSize: 15, fontWeight: '800', color: colors.textPrimary }}>
+                      {String(dueDate.getHours()).padStart(2, '0')}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel="Tăng 1 giờ"
+                    onPress={() => handleAdjustHours(1)}
+                    style={[styles.stepperBtn, { borderColor: colors.border, backgroundColor: colors.surface }]}
+                  >
+                    <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.textPrimary }}>+</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              <Text style={{ fontSize: 20, fontWeight: 'bold', color: colors.textSecondary, alignSelf: 'center', marginTop: 16 }}>:</Text>
+
+              {/* Cụm Phút */}
+              <View style={styles.stepperGroup}>
+                <ThemedText secondary style={styles.stepperLabel}>PHÚT (0 - 59)</ThemedText>
+                <View style={styles.stepperControls}>
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel="Giảm 5 phút"
+                    onPress={() => handleAdjustMinutes(-5)}
+                    style={[styles.stepperBtn, { borderColor: colors.border, backgroundColor: colors.surface }]}
+                  >
+                    <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.textPrimary }}>−</Text>
+                  </TouchableOpacity>
+                  <View style={[styles.stepperValueBox, { borderColor: colors.border, backgroundColor: colors.background }]}>
+                    <Text style={{ fontSize: 15, fontWeight: '800', color: colors.textPrimary }}>
+                      {String(dueDate.getMinutes()).padStart(2, '0')}
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel="Tăng 5 phút"
+                    onPress={() => handleAdjustMinutes(5)}
+                    style={[styles.stepperBtn, { borderColor: colors.border, backgroundColor: colors.surface }]}
+                  >
+                    <Text style={{ fontSize: 18, fontWeight: 'bold', color: colors.textPrimary }}>+</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+
+            {/* Mốc giờ thông dụng */}
+            <View style={styles.timeChipsSection}>
+              <ThemedText secondary style={{ fontSize: 11, fontWeight: '600', marginBottom: 4 }}>
+                ⚡ Mốc giờ thông dụng:
+              </ThemedText>
+              <View style={styles.timeChips}>
+                {[
+                  { label: '23:59 (Đêm)', h: 23, m: 59 },
+                  { label: '17:00 (Chiều)', h: 17, m: 0 },
+                  { label: '12:00 (Trưa)', h: 12, m: 0 },
+                  { label: '08:00 (Sáng)', h: 8, m: 0 },
+                ].map((t) => {
+                  const isTimeSelected =
+                    dueDate.getHours() === t.h && dueDate.getMinutes() === t.m;
+                  return (
+                    <TouchableOpacity
+                      key={t.label}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Chọn mốc ${t.label}`}
+                      onPress={() => handleSelectTime(t.h, t.m)}
+                      style={[
+                        styles.timeChip,
+                        {
+                          backgroundColor: isTimeSelected ? colors.tint : colors.background,
+                          borderColor: isTimeSelected ? colors.tint : colors.border,
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 11,
+                          fontWeight: '600',
+                          color: isTimeSelected ? colors.surface : colors.textPrimary,
+                        }}
+                      >
+                        {t.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
             </View>
           </View>
         </View>
@@ -571,18 +664,66 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   timeRow: {
-    flexDirection: 'row',
     borderTopWidth: 1,
     paddingTop: Spacing.sm,
     marginTop: Spacing.xs,
+  },
+  timeHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: Spacing.xs,
+    marginBottom: Spacing.xs,
+  },
+  timeDisplayBadge: {
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+  },
+  stepperContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.md,
+    marginVertical: Spacing.xs,
+  },
+  stepperGroup: {
+    alignItems: 'center',
+  },
+  stepperLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  stepperControls: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  stepperBtn: {
+    width: TouchTarget.minHeight,
+    height: TouchTarget.minHeight,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepperValueBox: {
+    minWidth: 44,
+    height: TouchTarget.minHeight,
+    borderRadius: 8,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 6,
+  },
+  timeChipsSection: {
+    marginTop: Spacing.sm,
   },
   timeChips: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
-    flex: 1,
   },
   timeChip: {
     paddingHorizontal: Spacing.sm,
