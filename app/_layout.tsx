@@ -10,6 +10,7 @@
  * 2. Kích hoạt hook `useNotificationListener()` của TV1 để sẵn sàng xử lý Deep Linking
  *    khi người dùng bấm vào thông báo deadline từ thanh Notification điện thoại.
  * 3. Tự động đồng bộ theme cho thanh Header và Status Bar theo hệ thống (Light/Dark).
+ * 4. Khôi phục phiên đăng nhập từ SecureStore (Survive App Restart) qua `useAuthStore().restoreSession()`.
  * 
  * 🎓 CÂU HỎI VẤN ĐÁP (VIVA) CỦA THẦY NGUYỄN XUÂN VINH:
  * - Câu hỏi: "Tại sao `QueryClientProvider` và `useNotificationListener` lại được đặt trong Root Layout?"
@@ -28,9 +29,10 @@ import { useColorScheme } from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useNotificationListener, requestNotificationPermissions } from '../src/hooks/useNotifications';
 import { useThemeColor } from '../src/hooks/useThemeColor';
+import { useAuthStore } from '../src/store/authStore';
 
 // Khởi tạo một đối tượng QueryClient duy nhất cho toàn bộ app
-const queryClient = new QueryClient({
+export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 2, // Tự động thử lại 2 lần nếu mất kết nối mạng
@@ -42,14 +44,16 @@ const queryClient = new QueryClient({
 export default function RootLayout() {
   const scheme = useColorScheme();
   const colors = useThemeColor();
+  const restoreSession = useAuthStore((state) => state.restoreSession);
 
   // BƯỚC 1: Kích hoạt listener lắng nghe sự kiện bấm vào thông báo (Deep Linking)
   useNotificationListener();
 
-  // BƯỚC 2: Yêu cầu cấp quyền hiển thị thông báo khi mở app lần đầu
+  // BƯỚC 2: Yêu cầu cấp quyền thông báo và khôi phục phiên đăng nhập từ SecureStore (Survive App Restart)
   useEffect(() => {
     requestNotificationPermissions();
-  }, []);
+    restoreSession();
+  }, [restoreSession]);
 
   /**
    * BƯỚC 3: RENDER TOÀN BỘ CÂY ĐIỀU HƯỚNG CỦA ỨNG DỤNG
@@ -71,7 +75,9 @@ export default function RootLayout() {
           },
         }}
       >
-        {/* Nhóm màn hình chính có Bottom Tabs */}
+        {/* Nhóm màn hình xác thực (Sign In) */}
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        {/* Nhóm màn hình chính có Bottom Tabs (Protected Routes) */}
         <Stack.Screen name="(app)" options={{ headerShown: false }} />
         {/* Màn hình lỗi 404 khi không tìm thấy trang */}
         <Stack.Screen name="+not-found" options={{ title: 'Lỗi 404' }} />

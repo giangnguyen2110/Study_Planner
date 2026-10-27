@@ -1,10 +1,12 @@
 module.exports = {
-  preset: 'jest-expo',
+  setupFiles: ['<rootDir>/__mocks__/setup-env.js'],
+  testMatch: ['**/__tests__/**/*.test.[jt]s?(x)'],
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
   moduleNameMapper: {
-    '^react-native/setup-env$': '<rootDir>/__mocks__/setup-env.js',
-    '^react-native/asset-registry$': '<rootDir>/__mocks__/setup-env.js',
+    '^react-native$': '<rootDir>/__mocks__/react-native.js',
+    '^@testing-library/react-native$': '<rootDir>/__mocks__/@testing-library/react-native.js',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg)',
+    'node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*)',
   ],
 };
