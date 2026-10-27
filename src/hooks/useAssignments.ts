@@ -20,6 +20,7 @@
  * ============================================================================
  */
 
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AssignmentItem } from '../types/study';
@@ -258,4 +259,20 @@ export function useCreateAssignment() {
       queryClient.invalidateQueries({ queryKey: ['assignments'] });
     },
   });
+}
+
+/**
+ * Hook lấy mốc thời gian lưu trữ ngoại tuyến gần nhất từ AsyncStorage
+ * Phục vụ hiển thị OfflineBanner khi chạy chế độ offline: "showing saved data from <time>"
+ */
+export function useOfflineCacheTime(): string | null {
+  const [cachedTime, setCachedTime] = useState<string | null>(null);
+
+  useEffect(() => {
+    AsyncStorage.getItem(CACHE_TIMESTAMP_KEY).then((time) => {
+      if (time) setCachedTime(time);
+    });
+  }, []);
+
+  return cachedTime;
 }

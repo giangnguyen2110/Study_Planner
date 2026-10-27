@@ -52,7 +52,8 @@ import { AccessibleButton } from '../../../src/components/ui/AccessibleButton';
 import { Due48hWidget } from '../../../src/components/features/Due48hWidget';
 import { AssignmentCard } from '../../../src/components/features/AssignmentCard';
 import { StateHandler } from '../../../src/components/ui/StateHandler';
-import { useAssignments, useToggleAssignment } from '../../../src/hooks/useAssignments';
+import { OfflineBanner } from '../../../src/components/ui/OfflineBanner';
+import { useAssignments, useToggleAssignment, useOfflineCacheTime } from '../../../src/hooks/useAssignments';
 import { useCourses } from '../../../src/hooks/useCourses';
 import { useThemeColor } from '../../../src/hooks/useThemeColor';
 import { triggerImmediateDemoNotification } from '../../../src/hooks/useNotifications';
@@ -76,6 +77,7 @@ export default function HomeScreen() {
 
   const { data: courses = [] } = useCourses();
   const toggleMutation = useToggleAssignment();
+  const cachedTime = useOfflineCacheTime();
 
   // BƯỚC 2.2: Tính toán các số liệu thống kê nhanh cho Dashboard
   const totalTasks = assignments.length;
@@ -143,6 +145,11 @@ export default function HomeScreen() {
             />
           }
         >
+          {/* ================================================================ */}
+          {/* PHẦN 0: BANNER NGOẠI TUYẾN (OFFLINE BANNER - MUST-HAVE #6)         */}
+          {/* ================================================================ */}
+          <OfflineBanner isOffline={isError} savedTime={cachedTime} />
+
           {/* ================================================================ */}
           {/* PHẦN 1: BANNER CHÀO MỪNG VÀ NGÀY THÁNG THỰC TẾ                    */}
           {/* ================================================================ */}

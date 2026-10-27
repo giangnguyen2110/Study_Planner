@@ -42,7 +42,8 @@ import { ThemedText } from '../../../src/components/ui/ThemedText';
 import { AssignmentCard } from '../../../src/components/features/AssignmentCard';
 import { WeeklyCalendar } from '../../../src/components/features/WeeklyCalendar';
 import { StateHandler } from '../../../src/components/ui/StateHandler';
-import { useAssignments, useToggleAssignment } from '../../../src/hooks/useAssignments';
+import { OfflineBanner } from '../../../src/components/ui/OfflineBanner';
+import { useAssignments, useToggleAssignment, useOfflineCacheTime } from '../../../src/hooks/useAssignments';
 import { useCourses } from '../../../src/hooks/useCourses';
 import { useThemeColor } from '../../../src/hooks/useThemeColor';
 import { Spacing, TouchTarget } from '../../../src/constants/tokens';
@@ -73,6 +74,7 @@ export default function ScheduleScreen() {
 
   const { data: courses = [] } = useCourses();
   const toggleMutation = useToggleAssignment();
+  const cachedTime = useOfflineCacheTime();
 
   // BƯỚC 2.5: Áp dụng đồng thời cả 2 bộ lọc: Trạng thái VÀ Môn học
   const filteredAssignments = assignments.filter((a) => {
@@ -86,6 +88,11 @@ export default function ScheduleScreen() {
    */
   return (
     <ThemedView style={styles.container}>
+      {/* ==================================================================== */}
+      {/* BANNER NGOẠI TUYẾN (OFFLINE BANNER - MUST-HAVE #6)                   */}
+      {/* ==================================================================== */}
+      <OfflineBanner isOffline={isError} savedTime={cachedTime} />
+
       {/* ==================================================================== */}
       {/* THANH 1: NÚT CHUYỂN ĐỔI CHẾ ĐỘ XEM (DANH SÁCH <-> THEO TUẦN)         */}
       {/* ==================================================================== */}
