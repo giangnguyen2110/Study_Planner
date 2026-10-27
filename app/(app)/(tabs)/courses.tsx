@@ -15,21 +15,22 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, Alert } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Alert, TouchableOpacity } from 'react-native';
 import { ThemedView } from '../../../src/components/ui/ThemedView';
 import { ThemedText } from '../../../src/components/ui/ThemedText';
 import { AccessibleButton } from '../../../src/components/ui/AccessibleButton';
 import { StateHandler } from '../../../src/components/ui/StateHandler';
 import { useCourses } from '../../../src/hooks/useCourses';
 import { useAssignments } from '../../../src/hooks/useAssignments';
-import { useThemeColor } from '../../../src/hooks/useThemeColor';
+import { useThemeColor, useThemePreference } from '../../../src/hooks/useThemeColor';
 import { computeCourseProgress } from '../../../src/utils/statsUtils';
-import { Spacing } from '../../../src/constants/tokens';
+import { Spacing, TouchTarget } from '../../../src/constants/tokens';
 import { useAuthStore, selectCurrentUser } from '../../../src/store/authStore';
 import { useQueryClient } from '@tanstack/react-query';
 
 export default function CoursesScreen() {
   const colors = useThemeColor();
+  const { themePreference, activeTheme, setThemePreference } = useThemePreference();
   const queryClient = useQueryClient();
 
   // Tiêu chí chấm điểm của Thầy Vinh: Dùng Selector lấy thông tin user và hàm signOut
@@ -94,6 +95,87 @@ export default function CoursesScreen() {
                   <ThemedText secondary style={styles.userMssv}>
                     MSSV: {currentUser?.studentId ?? '1923051154'}
                   </ThemedText>
+                </View>
+              </View>
+
+              {/* KHỐI CHUYỂN ĐỔI CHẾ ĐỘ SÁNG / TỐI (THEME SWITCHER) */}
+              <View style={[styles.themeBox, { borderColor: colors.border, backgroundColor: colors.background }]}>
+                <ThemedText style={{ fontWeight: '700', fontSize: 13, marginBottom: Spacing.xs }}>
+                  🌓 Giao diện: {activeTheme === 'dark' ? 'Chế độ Tối' : 'Chế độ Sáng'}
+                </ThemedText>
+
+                <View style={styles.themeOptionsRow}>
+                  {/* Tùy chọn 1: Sáng */}
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel="Bật chế độ giao diện sáng"
+                    onPress={() => setThemePreference('light')}
+                    style={[
+                      styles.themeBtn,
+                      {
+                        backgroundColor: themePreference === 'light' ? colors.tint : colors.surface,
+                        borderColor: themePreference === 'light' ? colors.tint : colors.border,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        fontWeight: '700',
+                        color: themePreference === 'light' ? colors.surface : colors.textPrimary,
+                      }}
+                    >
+                      ☀️ Sáng
+                    </Text>
+                  </TouchableOpacity>
+
+                  {/* Tùy chọn 2: Tối */}
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel="Bật chế độ giao diện tối"
+                    onPress={() => setThemePreference('dark')}
+                    style={[
+                      styles.themeBtn,
+                      {
+                        backgroundColor: themePreference === 'dark' ? colors.tint : colors.surface,
+                        borderColor: themePreference === 'dark' ? colors.tint : colors.border,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        fontWeight: '700',
+                        color: themePreference === 'dark' ? colors.surface : colors.textPrimary,
+                      }}
+                    >
+                      🌙 Tối
+                    </Text>
+                  </TouchableOpacity>
+
+                  {/* Tùy chọn 3: Tự động theo Hệ thống */}
+                  <TouchableOpacity
+                    accessibilityRole="button"
+                    accessibilityLabel="Tự động theo hệ thống"
+                    onPress={() => setThemePreference('system')}
+                    style={[
+                      styles.themeBtn,
+                      {
+                        backgroundColor: themePreference === 'system' ? colors.tint : colors.surface,
+                        borderColor: themePreference === 'system' ? colors.tint : colors.border,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        fontWeight: '700',
+                        color: themePreference === 'system' ? colors.surface : colors.textPrimary,
+                      }}
+                    >
+                      ⚙️ Tự động
+                    </Text>
+                  </TouchableOpacity>
                 </View>
               </View>
 
@@ -250,5 +332,25 @@ const styles = StyleSheet.create({
   },
   statsText: {
     fontSize: 12,
+  },
+  themeBox: {
+    padding: Spacing.sm,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginTop: Spacing.md,
+  },
+  themeOptionsRow: {
+    flexDirection: 'row',
+    gap: Spacing.xs,
+    marginTop: Spacing.xs,
+  },
+  themeBtn: {
+    flex: 1,
+    minHeight: TouchTarget.minHeight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingVertical: Spacing.xs,
   },
 });

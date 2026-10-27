@@ -55,7 +55,7 @@ import { StateHandler } from '../../../src/components/ui/StateHandler';
 import { OfflineBanner } from '../../../src/components/ui/OfflineBanner';
 import { useAssignments, useToggleAssignment, useOfflineCacheTime } from '../../../src/hooks/useAssignments';
 import { useCourses } from '../../../src/hooks/useCourses';
-import { useThemeColor } from '../../../src/hooks/useThemeColor';
+import { useThemeColor, useThemePreference } from '../../../src/hooks/useThemeColor';
 import { triggerImmediateDemoNotification } from '../../../src/hooks/useNotifications';
 import { Spacing, TouchTarget } from '../../../src/constants/tokens';
 
@@ -64,6 +64,7 @@ import { Spacing, TouchTarget } from '../../../src/constants/tokens';
 // ============================================================================
 export default function HomeScreen() {
   const colors = useThemeColor();
+  const { activeTheme, setThemePreference } = useThemePreference();
   const router = useRouter();
 
   // BƯỚC 2.1: Gọi TanStack Query hooks để lấy danh sách bài tập và môn học
@@ -154,12 +155,32 @@ export default function HomeScreen() {
           {/* PHẦN 1: BANNER CHÀO MỪNG VÀ NGÀY THÁNG THỰC TẾ                    */}
           {/* ================================================================ */}
           <View style={styles.welcomeBanner}>
-            <ThemedText style={styles.greetingTitle}>
-              Chào bạn! 👋
-            </ThemedText>
-            <ThemedText secondary style={styles.greetingSubtitle}>
-              Hôm nay là {todayDateString}
-            </ThemedText>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <View>
+                <ThemedText style={styles.greetingTitle}>
+                  Chào bạn! 👋
+                </ThemedText>
+                <ThemedText secondary style={styles.greetingSubtitle}>
+                  Hôm nay là {todayDateString}
+                </ThemedText>
+              </View>
+
+              {/* Nút chuyển đổi nhanh Sáng / Tối */}
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel={`Chuyển sang chế độ ${activeTheme === 'dark' ? 'sáng' : 'tối'}`}
+                onPress={() => setThemePreference(activeTheme === 'dark' ? 'light' : 'dark')}
+                style={[
+                  styles.themeToggleBtn,
+                  {
+                    backgroundColor: colors.surface,
+                    borderColor: colors.border,
+                  },
+                ]}
+              >
+                <Text style={{ fontSize: 18 }}>{activeTheme === 'dark' ? '🌙' : '☀️'}</Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* ================================================================ */}
@@ -436,5 +457,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1.5,
     marginBottom: Spacing.md,
+  },
+  themeToggleBtn: {
+    minHeight: TouchTarget.minHeight,
+    minWidth: TouchTarget.minWidth,
+    borderRadius: 22,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.xs,
   },
 });
