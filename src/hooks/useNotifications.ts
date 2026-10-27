@@ -75,9 +75,9 @@ export function useNotificationListener() {
         const data = response.notification.request.content.data;
         const assignmentId = data?.assignmentId;
 
-        // Nếu có assignmentId, thực hiện Deep Link nhảy vào màn hình chi tiết
+        // Nếu có assignmentId, thực hiện Deep Link nhảy vào màn hình chi tiết kèm flag fromNotification
         if (assignmentId) {
-          router.push(`/assignments/${assignmentId}`);
+          router.push(`/assignments/${assignmentId}?fromNotification=true`);
         }
       }
     );

@@ -16,7 +16,7 @@
 
 import React from 'react';
 import { View, StyleSheet, Image, ScrollView, Alert } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ThemedView } from '../../../src/components/ui/ThemedView';
 import { ThemedText } from '../../../src/components/ui/ThemedText';
 import { AccessibleButton } from '../../../src/components/ui/AccessibleButton';
@@ -27,7 +27,8 @@ import { triggerImmediateDemoNotification } from '../../../src/hooks/useNotifica
 import { Spacing } from '../../../src/constants/tokens';
 
 export default function AssignmentDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, fromNotification } = useLocalSearchParams<{ id: string; fromNotification?: string }>();
+  const router = useRouter();
   const colors = useThemeColor();
   const { data: assignments = [] } = useAssignments();
   const { data: courses = [] } = useCourses();
@@ -56,7 +57,17 @@ export default function AssignmentDetailScreen() {
       await triggerImmediateDemoNotification(item.id, item.title);
       Alert.alert(
         'Đã đặt nhắc nhở! ⏰',
-        'Sau đúng 2 giây, thông báo deadline sẽ xuất hiện trên thanh trạng thái điện thoại.\n\nBạn hãy vuốt xuống và chạm vào thông báo để xem tính năng Deep Linking tự động mở lại trang này nhé!'
+        'Sau đúng 2 giây, thông báo deadline sẽ xuất hiện trên thanh trạng thái điện thoại.\n\n👉 Mẹo chấm điểm Deep Linking: Bấm "Về Trang Chủ để chờ" bên dưới hoặc thoát ra màn hình chính điện thoại. Sau 2s khi thông báo nổ ra, hãy chạm vào banner để thấy app tự động nhảy vèo vào trang này!',
+        [
+          {
+            text: 'Ở lại đây',
+            style: 'cancel',
+          },
+          {
+            text: '👉 Về Trang Chủ để chờ thông báo',
+            onPress: () => router.replace('/(app)/(tabs)'),
+          },
+        ]
       );
     } catch {
       Alert.alert('Thông báo', 'Không thể gửi thông báo cục bộ.');
@@ -66,6 +77,26 @@ export default function AssignmentDetailScreen() {
   return (
     <ThemedView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {/* BANNER MINH CHỨNG DEEP LINKING THÀNH CÔNG (TỰ ĐỘNG HIỆN KHI CHẠM THÔNG BÁO) */}
+        {fromNotification === 'true' && (
+          <View
+            style={[
+              styles.deepLinkSuccessBox,
+              {
+                backgroundColor: colors.tint + '18',
+                borderColor: colors.tint,
+              },
+            ]}
+          >
+            <ThemedText style={{ fontSize: 16, fontWeight: '800', color: colors.tint }}>
+              🎯 DEEP LINKING THÀNH CÔNG!
+            </ThemedText>
+            <ThemedText secondary style={{ fontSize: 13, marginTop: 4, lineHeight: 18 }}>
+              Hệ điều hành vừa chuyển thẳng từ Thanh thông báo vào đúng bài tập này ({item.title}).
+            </ThemedText>
+          </View>
+        )}
+
         {/* Tiêu đề bài tập */}
         <ThemedText style={styles.title}>{item.title}</ThemedText>
 
@@ -214,6 +245,12 @@ const styles = StyleSheet.create({
   },
   photoContainer: {
     marginTop: Spacing.sm,
+  },
+  deepLinkSuccessBox: {
+    padding: Spacing.md,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    marginBottom: Spacing.md,
   },
   notificationBox: {
     padding: Spacing.md,
