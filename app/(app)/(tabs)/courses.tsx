@@ -15,7 +15,8 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Alert, TouchableOpacity, Platform } from 'react-native';
+import { useRouter } from 'expo-router';
 import { ThemedView } from '../../../src/components/ui/ThemedView';
 import { ThemedText } from '../../../src/components/ui/ThemedText';
 import { AccessibleButton } from '../../../src/components/ui/AccessibleButton';
@@ -29,6 +30,7 @@ import { useAuthStore, selectCurrentUser } from '../../../src/store/authStore';
 import { useQueryClient } from '@tanstack/react-query';
 
 export default function CoursesScreen() {
+  const router = useRouter();
   const colors = useThemeColor();
   const { themePreference, activeTheme, setThemePreference } = useThemePreference();
   const queryClient = useQueryClient();
@@ -49,23 +51,47 @@ export default function CoursesScreen() {
   };
 
   /**
+   * Thực hiện Đăng xuất triệt để (Sign Out):
+   * 1. Xóa sạch bộ nhớ cache của TanStack Query
+   * 2. Xóa token và user khỏi SecureStore / LocalStorage, reset Zustand store
+   * 3. Chuyển hướng an toàn quay về màn hình đăng nhập
+   */
+  const performSignOut = async () => {
+    try {
+      // 1. Dọn sạch bộ nhớ cache của TanStack Query (chống rò rỉ dữ liệu giữa user A và user B)
+      queryClient.clear();
+      // 2. Xóa token và user khỏi SecureStore, reset Zustand state
+      await signOut();
+      // 3. Điều hướng an toàn quay về màn hình đăng nhập
+      router.replace('/(auth)/sign-in');
+    } catch (error) {
+      console.error('Lỗi khi đăng xuất:', error);
+      router.replace('/(auth)/sign-in');
+    }
+  };
+
+  /**
    * Xử lý Đăng xuất triệt để (Sign Out)
-   * Theo yêu cầu Lab 08 & Đề tài: Xóa token trong SecureStore, reset Zustand store và xóa sạch TanStack Query Cache!
+   * Tương thích hoàn hảo cả trên Trình duyệt Web và Điện thoại di động thật
    */
   const handleSignOut = () => {
-    Alert.alert('Xác nhận đăng xuất', 'Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?', [
-      { text: 'Hủy', style: 'cancel' },
-      {
-        text: 'Đăng xuất',
-        style: 'destructive',
-        onPress: async () => {
-          // 1. Dọn sạch bộ nhớ cache của TanStack Query (chống rò rỉ dữ liệu giữa user A và user B)
-          queryClient.clear();
-          // 2. Xóa token và user khỏi SecureStore, reset Zustand state
-          await signOut();
+    if (Platform.OS === 'web') {
+      const confirmed = typeof window !== 'undefined'
+        ? window.confirm('Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?')
+        : true;
+      if (confirmed) {
+        performSignOut();
+      }
+    } else {
+      Alert.alert('Xác nhận đăng xuất', 'Bạn có chắc chắn muốn đăng xuất khỏi tài khoản?', [
+        { text: 'Hủy', style: 'cancel' },
+        {
+          text: 'Đăng xuất',
+          style: 'destructive',
+          onPress: performSignOut,
         },
-      },
-    ]);
+      ]);
+    }
   };
 
   return (
