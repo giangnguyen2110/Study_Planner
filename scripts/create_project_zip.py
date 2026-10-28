@@ -24,6 +24,14 @@ def create_clean_zip(source_dir, output_zip):
     print(f"Created {output_zip} with {count} files, size: {size_mb:.2f} MB")
 
 if __name__ == "__main__":
-    source = "c:/CaNhan/LapTrinhMobile/StudyPlanner"
-    out_path = "c:/CaNhan/LapTrinhMobile/1923051154_Project.zip"
-    create_clean_zip(source, out_path)
+    current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    parent_dir = os.path.dirname(current_dir)
+    zip_name = "1923050181_1923051154_StudyPlanner.zip"
+    
+    out_parent = os.path.join(parent_dir, zip_name)
+    out_local = os.path.join(current_dir, zip_name)
+    
+    create_clean_zip(current_dir, out_parent)
+    import shutil
+    shutil.copyfile(out_parent, out_local)
+    print(f"Also saved local copy: {out_local}")
