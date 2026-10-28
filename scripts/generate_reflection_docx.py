@@ -39,7 +39,7 @@ def create_reflection_docx(output_path):
     p_sub = doc.add_paragraph()
     p_sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
     p_sub.paragraph_format.space_after = Pt(8)
-    run_sub = p_sub.add_run("Đề tài 01: Study Planner | Môn: Lập trình Mobile (TH7011101 - 23DTH1) | GV: Thầy Nguyễn Xuân Vinh\nSinh viên: Trần Bảo Trâm (TV1) — Nguyễn Thị Hương Giang (MSSV: 1923051154 - TV2)")
+    run_sub = p_sub.add_run("Đề tài 01: Study Planner | Môn: Lập trình Mobile (TH7011101 - 23DTH1) | GV: Thầy Nguyễn Xuân Vinh\nSinh viên: Trần Bảo Trâm (MSSV: 1923050181 - TV1) — Nguyễn Thị Hương Giang (MSSV: 1923051154 - TV2)")
     run_sub.font.name = "Times New Roman"
     run_sub.font.size = Pt(10.5)
     run_sub.font.italic = True
@@ -124,5 +124,5 @@ def create_reflection_docx(output_path):
     print("Saved successfully to:", output_path)
 
 if __name__ == "__main__":
-    create_reflection_docx("c:/CaNhan/LapTrinhMobile/StudyPlanner/OnePage_Reflection.docx")
+    create_reflection_docx("c:/CaNhan/LapTrinhMobile/1923050181_1923051154_StudyPlanner/OnePage_Reflection.docx")
     create_reflection_docx("c:/CaNhan/LapTrinhMobile/OnePage_Reflection.docx")
